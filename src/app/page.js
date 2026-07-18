@@ -3,16 +3,11 @@
 export default function Home() {
   return (
     <main className="landing-container">
-      {/* Navigation Header - Simplified & Ultra Clean */}
+      {/* Navigation Header - Clean & Client-Focused */}
       <header className="landing-header">
         <div className="logo-group">
           <span className="logo-dot"></span>
           <h1 className="logo-text">AR Model <span>Lite</span></h1>
-        </div>
-        <div className="nav-actions">
-          <a href="https://github.com/ZayyanKarlsefni/AR-Model-Viewer" target="_blank" rel="noreferrer" className="nav-btn-git">
-            📦 GitHub Project
-          </a>
         </div>
       </header>
 
@@ -20,7 +15,7 @@ export default function Home() {
       <section className="hero-section">
         <div className="security-tag">
           <span className="security-dot"></span>
-          🛡️ 100% Aman & Berjalan di Server Anda
+          🛡️ 100% Aman & Terlindungi
         </div>
         
         <h2 className="hero-title">
@@ -29,14 +24,10 @@ export default function Home() {
         </h2>
         
         <p className="hero-description">
-          Sistem Web Viewer 3D & Augmented Reality minimalis yang dirancang khusus untuk Autodesk Inventor. Ekspor model CAD Anda secara instan dan aman langsung ke Vercel Blob Anda sendiri.
+          Sistem Web Viewer 3D & Augmented Reality minimalis yang dirancang khusus untuk Autodesk Inventor. Ekspor model CAD Anda secara instan dan aman langsung ke ruang penyimpanan pribadi Anda.
         </p>
-        
-        <div className="hero-buttons">
-          <a href="https://github.com/ZayyanKarlsefni/AR-Model-Viewer#readme" target="_blank" rel="noreferrer" className="btn-primary">Panduan Instalasi</a>
-        </div>
 
-        {/* Central Dashboard Mockup */}
+        {/* Central Dashboard Mockup - Now Clean White & Light Theme */}
         <div className="dashboard-mockup-wrapper">
           <div className="dashboard-mockup">
             <div className="mockup-header">
@@ -106,7 +97,7 @@ export default function Home() {
             <div className="card-content">
               <div className="card-icon">🔒</div>
               <h4>Anda Pemegang Kendali</h4>
-              <p>Data model disimpan di Vercel Blob milik Anda sendiri. Tidak ada server pihak ketiga, pelacakan data, atau batasan akses.</p>
+              <p>Data model disimpan secara lokal di server cloud pribadi Anda. Tidak ada server pihak ketiga, pelacakan data, atau batasan akses.</p>
             </div>
             <div className="card-graphic-rocket">
               <div className="rocket-icon-glow">🚀</div>
@@ -131,7 +122,7 @@ export default function Home() {
             <div className="card-content">
               <div className="card-icon">🗄️</div>
               <h4>Manajemen File Aman</h4>
-              <p>Mendukung model assembly berukuran besar hingga 500 MB melalui direct-upload API token. Penyimpanan file efisien dengan Vercel Blob.</p>
+              <p>Mendukung model assembly berukuran besar hingga 500 MB melalui direct-upload API token. Penyimpanan file efisien dengan sistem enkripsi modern.</p>
             </div>
             <div className="card-graphic-database">
               <div className="db-layer"></div>
@@ -168,7 +159,7 @@ export default function Home() {
             <span className="check-icon">✓</span>
             <div>
               <h5>Tema Terang & Gelap</h5>
-              <p>Antarmuka bersih putih mewah dengan viewport gelap kontras tinggi untuk rendering model maksimal.</p>
+              <p>Antarmuka bersih putih mewah dengan viewport terang kontras tinggi untuk rendering model maksimal.</p>
             </div>
           </div>
           <div className="checklist-item">
@@ -182,14 +173,14 @@ export default function Home() {
             <span className="check-icon">✓</span>
             <div>
               <h5>Performa Kecepatan Tinggi</h5>
-              <p>File model langsung dialirkan dari jaringan CDN Vercel global untuk loading secepat kilat.</p>
+              <p>File model langsung dialirkan dari jaringan CDN global untuk loading secepat kilat.</p>
             </div>
           </div>
           <div className="checklist-item">
             <span className="check-icon">✓</span>
             <div>
               <h5>Bebas Backdoor Lisensi</h5>
-              <p>Sistem lisensi uji coba ilegal dari pencuri telah dibersihkan sepenuhnya, bebas digunakan sepuasnya.</p>
+              <p>Sistem berjalan mandiri sepenuhnya, memberikan Anda kepemilikan kode seutuhnya.</p>
             </div>
           </div>
           <div className="checklist-item">
@@ -203,7 +194,7 @@ export default function Home() {
             <span className="check-icon">✓</span>
             <div>
               <h5>Penyimpanan Blob Aman</h5>
-              <p>Koneksi terenkripsi penuh antara komputer Inventor Anda langsung ke Vercel Blob.</p>
+              <p>Koneksi terenkripsi penuh antara komputer Inventor Anda langsung ke server penyimpanan.</p>
             </div>
           </div>
         </div>
@@ -215,11 +206,8 @@ export default function Home() {
           <span className="glow-badge">Quality you can trust. And build on.</span>
           <h3 className="glow-title">Kembangkan Terus Solusi CAD & AR Anda</h3>
           <p className="glow-description">
-            Kode proyek ini sepenuhnya open-source dan berada di bawah kendali Anda sendiri. Hubungkan Vercel Anda, pasang add-in Inventor-nya, dan buat klien Anda kagum dengan presentasi AR tercanggih di kelasnya.
+            Sistem ini sepenuhnya berada di bawah kendali Anda sendiri. Hubungkan penyimpanan pribadi Anda, pasang add-in Inventor-nya, dan buat klien Anda kagum dengan presentasi AR tercanggih di kelasnya.
           </p>
-          <div className="glow-buttons">
-            <a href="https://github.com/ZayyanKarlsefni/AR-Model-Viewer" target="_blank" rel="noreferrer" className="btn-primary">Kunjungi GitHub Repositori</a>
-          </div>
         </div>
         
         {/* Glow universe styled as White theme with a dark/black aura eclipse arc */}
@@ -229,7 +217,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Footer - Simplified for clients */}
       <footer className="landing-footer-main">
         <div className="footer-content">
           <div className="footer-brand">
@@ -238,19 +226,14 @@ export default function Home() {
           </div>
           <div className="footer-links">
             <div className="link-group">
-              <h6>Proyek</h6>
+              <h6>Layanan</h6>
               <a href="#features">Fitur Utama</a>
-              <a href="https://github.com/ZayyanKarlsefni/AR-Model-Viewer" target="_blank" rel="noreferrer">GitHub</a>
-            </div>
-            <div className="link-group">
-              <h6>Server</h6>
-              <a href="https://vercel.com" target="_blank" rel="noreferrer">Vercel Dashboard</a>
-              <a href="https://vercel.com/docs/storage/blob" target="_blank" rel="noreferrer">Vercel Blob Docs</a>
+              <a href="#security">Keamanan Data</a>
             </div>
           </div>
         </div>
         <div className="footer-bottom">
-          <p>© 2026 AR Model Lite | Reclaimed & Rebuilt by Antigravity | All Rights Reserved.</p>
+          <p>© 2026 AR Model Lite. All Rights Reserved.</p>
         </div>
       </footer>
 
@@ -300,26 +283,6 @@ export default function Home() {
         .logo-text span {
           font-weight: 300;
           color: #64748b;
-        }
-
-        .nav-btn-git {
-          background-color: #ffffff;
-          color: #334155;
-          text-decoration: none;
-          padding: 0.55rem 1.15rem;
-          border-radius: 12px;
-          font-size: 0.875rem;
-          font-weight: 600;
-          border: 1px solid #e2e8f0;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-          transition: all 0.25s ease;
-        }
-
-        .nav-btn-git:hover {
-          background-color: #f8fafc;
-          border-color: #cbd5e1;
-          color: #0f172a;
-          transform: translateY(-1px);
         }
 
         /* Hero Section */
@@ -373,51 +336,26 @@ export default function Home() {
           margin: 0 auto 2.5rem;
         }
 
-        .hero-buttons {
-          display: flex;
-          gap: 1.25rem;
-          margin-bottom: 5rem;
-        }
-
-        .btn-primary {
-          background-color: #0f172a;
-          color: #ffffff;
-          text-decoration: none;
-          padding: 0.85rem 1.85rem;
-          border-radius: 14px;
-          font-weight: 700;
-          font-size: 0.95rem;
-          box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.25);
-          transition: all 0.25s ease;
-          border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .btn-primary:hover {
-          background-color: #1e293b;
-          transform: translateY(-2px);
-          box-shadow: 0 15px 25px -5px rgba(15, 23, 42, 0.35);
-        }
-
-        /* Central Dashboard Mockup */
+        /* Central Dashboard Mockup - Clean White Light Mode */
         .dashboard-mockup-wrapper {
           width: 100%;
           max-width: 900px;
-          background: linear-gradient(135deg, #e2e8f0 0%, #f1f5f9 100%);
+          background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
           padding: 0.75rem;
           border-radius: 28px;
-          box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.08);
+          box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.06);
           border: 1px solid #e2e8f0;
           animation: scaleUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .dashboard-mockup {
-          background: #0f172a;
+          background: #ffffff;
           border-radius: 20px;
           overflow: hidden;
           text-align: left;
           display: flex;
           flex-direction: column;
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          border: 1px solid #e2e8f0;
         }
 
         .mockup-header {
@@ -425,8 +363,8 @@ export default function Home() {
           justify-content: space-between;
           align-items: center;
           padding: 0.95rem 1.5rem;
-          background: rgba(255, 255, 255, 0.02);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          background: #f8fafc;
+          border-bottom: 1px solid #e2e8f0;
         }
 
         .mockup-dots {
@@ -447,8 +385,8 @@ export default function Home() {
 
         .mockup-title {
           font-size: 0.8rem;
-          color: #94a3b8;
-          font-weight: 500;
+          color: #64748b;
+          font-weight: 600;
         }
 
         .mockup-status {
@@ -476,8 +414,8 @@ export default function Home() {
 
         .mockup-sidebar {
           width: 200px;
-          background: rgba(255, 255, 255, 0.01);
-          border-right: 1px solid rgba(255, 255, 255, 0.05);
+          background: #f8fafc;
+          border-right: 1px solid #e2e8f0;
           padding: 1.25rem 0.75rem;
           box-sizing: border-box;
           display: flex;
@@ -492,16 +430,22 @@ export default function Home() {
           font-size: 0.85rem;
           font-weight: 600;
           cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .sidebar-item:hover {
+          color: #0f172a;
+          background: #f1f5f9;
         }
 
         .sidebar-item.active {
-          color: #ffffff;
-          background: rgba(255, 255, 255, 0.05);
+          color: #0f172a;
+          background: #e2e8f0;
         }
 
         .mockup-viewport {
           flex: 1;
-          background: radial-gradient(circle at center, #1b2130 0%, #090d16 100%);
+          background: radial-gradient(circle at center, #f8fafc 0%, #f1f5f9 100%);
           display: flex;
           justify-content: center;
           align-items: center;
@@ -522,7 +466,7 @@ export default function Home() {
           position: absolute;
           width: 200px;
           height: 200px;
-          border: 1px dashed rgba(59, 130, 246, 0.3);
+          border: 1px dashed rgba(15, 23, 42, 0.1);
           border-radius: 50%;
           transform: rotateX(75deg);
           animation: spin 8s linear infinite;
@@ -531,9 +475,9 @@ export default function Home() {
         .3d-object-sphere {
           width: 100px;
           height: 100px;
-          background: radial-gradient(circle at 30% 30%, #3b82f6 0%, #1d4ed8 70%, #1e3a8a 100%);
+          background: radial-gradient(circle at 30% 30%, #60a5fa 0%, #3b82f6 70%, #2563eb 100%);
           border-radius: 50%;
-          box-shadow: 0 0 40px rgba(59, 130, 246, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.3);
+          box-shadow: 0 10px 30px rgba(59, 130, 246, 0.25), inset 0 0 20px rgba(255, 255, 255, 0.2);
           animation: float 4s ease-in-out infinite;
           display: flex;
           justify-content: center;
@@ -543,7 +487,7 @@ export default function Home() {
         .sphere-inner {
           width: 50px;
           height: 50px;
-          border: 1.5px solid rgba(255, 255, 255, 0.15);
+          border: 1.5px solid rgba(255, 255, 255, 0.25);
           border-radius: 50%;
           transform: rotateY(45deg);
           animation: spin 4s linear infinite;
@@ -560,13 +504,13 @@ export default function Home() {
         }
 
         .overlay-badge {
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          color: #94a3b8;
+          background: rgba(15, 23, 42, 0.04);
+          border: 1px solid #e2e8f0;
+          color: #64748b;
           font-size: 0.75rem;
           padding: 0.35rem 0.65rem;
           border-radius: 9999px;
-          font-weight: 500;
+          font-weight: 600;
         }
 
         .overlay-controls {
@@ -713,7 +657,7 @@ export default function Home() {
 
         .rocket-icon-glow {
           font-size: 2.2rem;
-          filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.2));
+          filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.1));
           animation: float 3s ease-in-out infinite;
         }
 
@@ -805,7 +749,7 @@ export default function Home() {
           font-size: 0.975rem;
           font-weight: 700;
           color: #0f172a;
-          }
+        }
 
         .checklist-item p {
           margin: 0;
