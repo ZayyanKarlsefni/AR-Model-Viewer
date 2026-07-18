@@ -12,10 +12,16 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Missing code parameter' }, { status: 400 });
     }
 
-    // 1. Check Vercel Blob if token is configured
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
-      const { blobs } = await list({ prefix: `models/${code}.glb` });
-      if (blobs.length > 0) {
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+
+    // 1. Check Vercel Blob with explicit token passing and wider prefix match
+    if (token) {
+      const { blobs } = await list({ 
+        prefix: `models/${code}`,
+        token: token
+      });
+      
+      if (blobs && blobs.length > 0) {
         return NextResponse.json({ url: blobs[0].url });
       }
     }
