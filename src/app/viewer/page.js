@@ -75,7 +75,7 @@ function ViewerContent() {
               shadow-intensity="1.5"
               shadow-softness="0.8"
               auto-rotate
-              class="custom-viewer"
+              className="custom-viewer"
             >
               <button slot="ar-button" id="ar-button">
                 Lihat di Ruangan (AR)
@@ -238,9 +238,9 @@ function ViewerContent() {
           box-sizing: border-box;
         }
 
-        .custom-viewer {
-          width: 100%;
-          height: 100%;
+        model-viewer, .custom-viewer {
+          width: 100% !important;
+          height: 100% !important;
           background-color: #ffffff;
           --poster-color: transparent;
         }
