@@ -3,21 +3,16 @@
 export default function Home() {
   return (
     <main className="landing-container">
-      {/* Navigation Header */}
+      {/* Navigation Header - Simplified & Ultra Clean */}
       <header className="landing-header">
         <div className="logo-group">
           <span className="logo-dot"></span>
           <h1 className="logo-text">AR Model <span>Lite</span></h1>
         </div>
-        <nav className="nav-menu">
-          <a href="#features" className="nav-link">Fitur</a>
-          <a href="#docs" className="nav-link">Dokumentasi</a>
-          <a href="#security" className="nav-link">Keamanan</a>
-          <a href="https://github.com/ZayyanKarlsefni/AR-Model-Viewer" target="_blank" rel="noreferrer" className="nav-link">Github</a>
-        </nav>
         <div className="nav-actions">
-          <span className="nav-sign-in">Sign In</span>
-          <a href="#get-started" className="nav-btn-dark">Mulai Sekarang</a>
+          <a href="https://github.com/ZayyanKarlsefni/AR-Model-Viewer" target="_blank" rel="noreferrer" className="nav-btn-git">
+            📦 GitHub Project
+          </a>
         </div>
       </header>
 
@@ -25,7 +20,7 @@ export default function Home() {
       <section className="hero-section">
         <div className="security-tag">
           <span className="security-dot"></span>
-          🛡️ 100% Aman & Terlindungi di Server Anda
+          🛡️ 100% Aman & Berjalan di Server Anda
         </div>
         
         <h2 className="hero-title">
@@ -38,11 +33,10 @@ export default function Home() {
         </p>
         
         <div className="hero-buttons">
-          <a href="#get-started" className="btn-primary">Hubungkan Inventor</a>
-          <a href="#docs" className="btn-secondary">Lihat Dokumentasi</a>
+          <a href="https://github.com/ZayyanKarlsefni/AR-Model-Viewer#readme" target="_blank" rel="noreferrer" className="btn-primary">Panduan Instalasi</a>
         </div>
 
-        {/* Central Dashboard Mockup (Luxurious dark accent mockup) */}
+        {/* Central Dashboard Mockup */}
         <div className="dashboard-mockup-wrapper">
           <div className="dashboard-mockup">
             <div className="mockup-header">
@@ -66,7 +60,6 @@ export default function Home() {
               </div>
               
               <div className="mockup-viewport">
-                {/* Simulated 3D object rendering */}
                 <div className="simulated-3d-container">
                   <div className="3d-object-ring"></div>
                   <div className="3d-object-sphere">
@@ -86,7 +79,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Grid Section (Build a better website, faster.) */}
+      {/* Features Grid Section */}
       <section className="features-section" id="features">
         <div className="section-header">
           <span className="section-subtitle">Visualisasikan lebih cepat, lebih aman.</span>
@@ -94,7 +87,7 @@ export default function Home() {
         </div>
 
         <div className="features-grid">
-          {/* Card 1: 100+ components (Inventor integration) */}
+          {/* Card 1: Inventor integration */}
           <div className="feature-card large-card">
             <div className="card-content">
               <div className="card-icon">⚡</div>
@@ -149,7 +142,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Checklist Section (Everything you need. Nothing you don't.) */}
+      {/* Checklist Section */}
       <section className="checklist-section">
         <div className="section-header">
           <h3 className="section-title">Everything you need. Nothing you don't.</h3>
@@ -216,7 +209,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Bottom Light-Glow Section (Quality you can trust. And build on.) */}
+      {/* Bottom Section - White background with a touch of dark/black aura eclipse arc */}
       <section className="glow-section" id="security">
         <div className="glow-content">
           <span className="glow-badge">Quality you can trust. And build on.</span>
@@ -225,11 +218,11 @@ export default function Home() {
             Kode proyek ini sepenuhnya open-source dan berada di bawah kendali Anda sendiri. Hubungkan Vercel Anda, pasang add-in Inventor-nya, dan buat klien Anda kagum dengan presentasi AR tercanggih di kelasnya.
           </p>
           <div className="glow-buttons">
-            <a href="https://github.com/ZayyanKarlsefni/AR-Model-Viewer" target="_blank" rel="noreferrer" className="btn-primary-white">Kunjungi GitHub Repositori</a>
+            <a href="https://github.com/ZayyanKarlsefni/AR-Model-Viewer" target="_blank" rel="noreferrer" className="btn-primary">Kunjungi GitHub Repositori</a>
           </div>
         </div>
         
-        {/* Glow effect matching Figma style */}
+        {/* Glow universe styled as White theme with a dark/black aura eclipse arc */}
         <div className="glow-universe-container">
           <div className="glow-universe-arc"></div>
           <div className="glow-universe-light"></div>
@@ -247,7 +240,6 @@ export default function Home() {
             <div className="link-group">
               <h6>Proyek</h6>
               <a href="#features">Fitur Utama</a>
-              <a href="#security">Bypass Lisensi</a>
               <a href="https://github.com/ZayyanKarlsefni/AR-Model-Viewer" target="_blank" rel="noreferrer">GitHub</a>
             </div>
             <div className="link-group">
@@ -310,57 +302,24 @@ export default function Home() {
           color: #64748b;
         }
 
-        .nav-menu {
-          display: flex;
-          gap: 2.25rem;
-        }
-
-        .nav-link {
-          color: #475569;
+        .nav-btn-git {
+          background-color: #ffffff;
+          color: #334155;
           text-decoration: none;
-          font-size: 0.925rem;
-          font-weight: 500;
-          transition: color 0.25s ease;
-        }
-
-        .nav-link:hover {
-          color: #0f172a;
-        }
-
-        .nav-actions {
-          display: flex;
-          align-items: center;
-          gap: 1.75rem;
-        }
-
-        .nav-sign-in {
-          color: #475569;
-          font-size: 0.925rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: color 0.25s ease;
-        }
-
-        .nav-sign-in:hover {
-          color: #0f172a;
-        }
-
-        .nav-btn-dark {
-          background-color: #0f172a;
-          color: #ffffff;
-          text-decoration: none;
-          padding: 0.6rem 1.2rem;
+          padding: 0.55rem 1.15rem;
           border-radius: 12px;
-          font-size: 0.9rem;
+          font-size: 0.875rem;
           font-weight: 600;
-          box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.02);
           transition: all 0.25s ease;
         }
 
-        .nav-btn-dark:hover {
-          background-color: #1e293b;
+        .nav-btn-git:hover {
+          background-color: #f8fafc;
+          border-color: #cbd5e1;
+          color: #0f172a;
           transform: translateY(-1px);
-          box-shadow: 0 6px 15px rgba(15, 23, 42, 0.25);
         }
 
         /* Hero Section */
@@ -439,26 +398,7 @@ export default function Home() {
           box-shadow: 0 15px 25px -5px rgba(15, 23, 42, 0.35);
         }
 
-        .btn-secondary {
-          background-color: #ffffff;
-          color: #334155;
-          text-decoration: none;
-          padding: 0.85rem 1.85rem;
-          border-radius: 14px;
-          font-weight: 700;
-          font-size: 0.95rem;
-          border: 1px solid #e2e8f0;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-          transition: all 0.25s ease;
-        }
-
-        .btn-secondary:hover {
-          background-color: #f8fafc;
-          border-color: #cbd5e1;
-          transform: translateY(-2px);
-        }
-
-        /* Central Dashboard Mockup (Luxurious dark viewer) */
+        /* Central Dashboard Mockup */
         .dashboard-mockup-wrapper {
           width: 100%;
           max-width: 900px;
@@ -578,7 +518,6 @@ export default function Home() {
           align-items: center;
         }
 
-        /* 3D Wireframe Orbit effect matching Figma */
         .3d-object-ring {
           position: absolute;
           width: 200px;
@@ -684,7 +623,6 @@ export default function Home() {
           gap: 1.5rem;
         }
 
-        /* Feature Card styling */
         .feature-card {
           background: #ffffff;
           border: 1px solid #e2e8f0;
@@ -737,7 +675,6 @@ export default function Home() {
           margin: 0;
         }
 
-        /* Card Graphics matching Figma details */
         .card-graphic-wireframe {
           width: 160px;
           height: 160px;
@@ -868,7 +805,7 @@ export default function Home() {
           font-size: 0.975rem;
           font-weight: 700;
           color: #0f172a;
-        }
+          }
 
         .checklist-item p {
           margin: 0;
@@ -877,10 +814,10 @@ export default function Home() {
           color: #64748b;
         }
 
-        /* Bottom Light-Glow Section (Figma rising-planet light effect) */
+        /* Bottom Section - White background with a touch of dark/black aura eclipse arc */
         .glow-section {
-          background-color: #0d0f14;
-          color: #ffffff;
+          background-color: #ffffff;
+          color: #334155;
           padding: 7rem 2rem 0;
           text-align: center;
           position: relative;
@@ -889,6 +826,7 @@ export default function Home() {
           flex-direction: column;
           align-items: center;
           box-sizing: border-box;
+          border-bottom: 1px solid #f1f5f9;
         }
 
         .glow-content {
@@ -901,7 +839,7 @@ export default function Home() {
           display: inline-block;
           font-size: 0.8rem;
           font-weight: 700;
-          color: #60a5fa;
+          color: #2563eb;
           text-transform: uppercase;
           letter-spacing: 1.5px;
           margin-bottom: 1.5rem;
@@ -912,37 +850,18 @@ export default function Home() {
           font-weight: 800;
           line-height: 1.15;
           letter-spacing: -1.25px;
-          color: #ffffff;
+          color: #0f172a;
           margin: 0 0 1.25rem;
         }
 
         .glow-description {
           font-size: 1.1rem;
           line-height: 1.6;
-          color: #94a3b8;
+          color: #64748b;
           margin: 0 auto 2.5rem;
         }
 
-        .btn-primary-white {
-          background-color: #ffffff;
-          color: #0f172a;
-          text-decoration: none;
-          padding: 0.85rem 1.85rem;
-          border-radius: 14px;
-          font-weight: 700;
-          font-size: 0.95rem;
-          box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
-          transition: all 0.25s ease;
-          display: inline-block;
-        }
-
-        .btn-primary-white:hover {
-          background-color: #f1f5f9;
-          transform: translateY(-2px);
-          box-shadow: 0 15px 30px rgba(255, 255, 255, 0.15);
-        }
-
-        /* Figma Planet/Glow Arc simulation */
+        /* Glow universe styled as White theme with a dark/black aura eclipse arc */
         .glow-universe-container {
           position: relative;
           width: 100%;
@@ -957,11 +876,11 @@ export default function Home() {
           width: 1000px;
           height: 1000px;
           border-radius: 50%;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          background: radial-gradient(circle at top, rgba(255, 255, 255, 0.03) 0%, transparent 60%);
+          border: 1px solid rgba(15, 23, 42, 0.05);
+          background: radial-gradient(circle at top, rgba(15, 23, 42, 0.02) 0%, transparent 70%);
           position: absolute;
           top: 0;
-          box-shadow: 0 -20px 80px rgba(255, 255, 255, 0.05);
+          box-shadow: 0 -20px 80px rgba(15, 23, 42, 0.04);
         }
 
         .glow-universe-light {
@@ -969,14 +888,13 @@ export default function Home() {
           top: -20px;
           width: 500px;
           height: 100px;
-          background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
-          filter: blur(20px);
+          background: radial-gradient(ellipse at center, rgba(15, 23, 42, 0.03) 0%, transparent 70%);
+          filter: blur(15px);
         }
 
         /* Footer Main */
         .landing-footer-main {
           background-color: #ffffff;
-          border-top: 1px solid #f1f5f9;
           padding: 5rem 3rem 2.5rem;
           box-sizing: border-box;
         }
@@ -1099,9 +1017,6 @@ export default function Home() {
           .landing-header {
             padding: 1.25rem 1.5rem;
           }
-          .nav-menu {
-            display: none; /* Hide navigation links on small mobile screens */
-          }
           .hero-section {
             padding: 3rem 1rem 4rem;
           }
@@ -1118,7 +1033,7 @@ export default function Home() {
             max-width: 320px;
             gap: 0.75rem;
           }
-          .btn-primary, .btn-secondary {
+          .btn-primary {
             text-align: center;
           }
           .dashboard-mockup-wrapper {
@@ -1129,7 +1044,7 @@ export default function Home() {
             height: 380px;
           }
           .mockup-sidebar {
-            display: none; /* Hide sidebar on mobile viewer mockup */
+            display: none;
           }
           .glow-title {
             font-size: 2.1rem;
