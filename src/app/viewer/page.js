@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Script from 'next/script';
 
@@ -10,6 +10,11 @@ function ViewerContent() {
   const [modelUrl, setModelUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // States for Exploded View
+  const [hasAnimation, setHasAnimation] = useState(false);
+  const [sliderValue, setSliderValue] = useState(0);
+  const viewerRef = useRef(null);
 
   useEffect(() => {
     if (!code) {
@@ -34,6 +39,39 @@ function ViewerContent() {
         setLoading(false);
       });
   }, [code]);
+
+  // Hook into model-viewer to detect animations
+  useEffect(() => {
+    const mv = viewerRef.current;
+    if (!mv) return;
+
+    const onLoad = () => {
+      // If there are animations inside the GLB, pause auto-play and enable slider
+      if (mv.availableAnimations && mv.availableAnimations.length > 0) {
+        setHasAnimation(true);
+        setSliderValue(0);
+        mv.pause();
+      } else {
+        setHasAnimation(false);
+      }
+    };
+
+    mv.addEventListener('load', onLoad);
+    return () => {
+      mv.removeEventListener('load', onLoad);
+    };
+  }, [modelUrl]);
+
+  // Control animation time based on slider input
+  const handleSliderChange = (e) => {
+    const val = parseInt(e.target.value, 10);
+    setSliderValue(val);
+    
+    const mv = viewerRef.current;
+    if (mv && mv.duration) {
+      mv.currentTime = (val / 100) * mv.duration;
+    }
+  };
 
   return (
     <main className="viewer-container">
@@ -67,6 +105,7 @@ function ViewerContent() {
         {!loading && !error && modelUrl && (
           <div className="model-viewer-wrapper">
             <model-viewer
+              ref={viewerRef}
               src={modelUrl}
               ar
               ar-modes="webxr scene-viewer quick-look"
@@ -74,7 +113,7 @@ function ViewerContent() {
               poster="/poster.webp"
               shadow-intensity="1.5"
               shadow-softness="0.8"
-              auto-rotate
+              auto-rotate={!hasAnimation} // Auto-rotate only if there is no exploded animation
               className="custom-viewer"
             >
               <button slot="ar-button" id="ar-button">
@@ -85,6 +124,22 @@ function ViewerContent() {
                 <img src="https://modelviewer.dev/shared-assets/icons/hand.png" alt="AR prompt hand icon" />
               </div>
             </model-viewer>
+
+            {/* Custom interactive Exploded View Slider */}
+            {hasAnimation && (
+              <div className="exploded-slider-container">
+                <span className="slider-label">Urai Model</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={sliderValue}
+                  onChange={handleSliderChange}
+                  className="exploded-slider"
+                />
+                <span className="slider-value">{sliderValue}%</span>
+              </div>
+            )}
           </div>
         )}
       </section>
@@ -276,11 +331,75 @@ function ViewerContent() {
           transform: translateX(-50%) translateY(0);
         }
 
+        /* Custom Interactive Exploded View Slider Styling */
+        .exploded-slider-container {
+          position: absolute;
+          bottom: 5.5rem;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(12px);
+          border: 1px solid #e2e8f0;
+          padding: 0.75rem 1.5rem;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+          width: 85%;
+          max-width: 400px;
+          z-index: 25;
+          box-sizing: border-box;
+          transition: all 0.3s ease;
+        }
+
+        .slider-label {
+          font-size: 0.725rem;
+          font-weight: 700;
+          color: #0f172a;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          white-space: nowrap;
+        }
+
+        .exploded-slider {
+          flex: 1;
+          -webkit-appearance: none;
+          appearance: none;
+          height: 6px;
+          border-radius: 9999px;
+          background: #e2e8f0;
+          outline: none;
+        }
+
+        .exploded-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #0f172a;
+          cursor: pointer;
+          transition: transform 0.1s ease;
+        }
+
+        .exploded-slider::-webkit-slider-thumb:hover {
+          transform: scale(1.2);
+        }
+
+        .slider-value {
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: #475569;
+          width: 32px;
+          text-align: right;
+        }
+
         /* AR Prompt Hand Animation */
         #ar-prompt {
           position: absolute;
           left: 50%;
-          bottom: 6rem;
+          bottom: 9rem; /* Adjusted up so it sits above the slider */
           transform: translateX(-50%);
           display: none;
           pointer-events: none;
@@ -347,6 +466,11 @@ function ViewerContent() {
             text-align: center;
             border-radius: 10px;
             padding: 0.85rem 1.25rem;
+          }
+          .exploded-slider-container {
+            bottom: 5.25rem;
+            width: 90%;
+            padding: 0.65rem 1.25rem;
           }
           .model-viewer-wrapper {
             border-radius: 16px;
