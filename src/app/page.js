@@ -259,7 +259,7 @@ export default function Home() {
         .landing-container {
           background-color: #fcfcfd;
           color: #334155;
-          font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
           min-height: 100vh;
           overflow-x: hidden;
         }
