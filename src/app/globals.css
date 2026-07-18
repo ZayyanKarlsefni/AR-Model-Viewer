@@ -8,7 +8,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-jetbrains-mono), monospace;
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
@@ -16,5 +16,6 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-plus-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-jetbrains-mono), monospace;
+  letter-spacing: -0.02em;
 }

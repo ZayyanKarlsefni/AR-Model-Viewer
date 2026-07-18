@@ -98,7 +98,7 @@ function ViewerContent() {
         body {
           margin: 0;
           padding: 0;
-          font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          font-family: var(--font-jetbrains-mono), monospace;
           background: #f8fafc;
           color: #334155;
           overflow-x: hidden;

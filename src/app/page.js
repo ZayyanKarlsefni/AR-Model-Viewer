@@ -56,7 +56,7 @@ export default function Home() {
           flex-direction: column;
           align-items: center;
           justify-content: space-between;
-          font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          font-family: var(--font-jetbrains-mono), monospace;
           position: relative;
           overflow: hidden;
           padding: 2rem;
@@ -108,7 +108,7 @@ export default function Home() {
           font-weight: 800;
           letter-spacing: -0.75px;
           color: #0f172a;
-          font-family: var(--font-plus-jakarta), sans-serif;
+          font-family: var(--font-jetbrains-mono), monospace;
         }
 
         .logo-text span {
@@ -135,7 +135,7 @@ export default function Home() {
           font-weight: 800;
           letter-spacing: -0.5px;
           color: #0f172a;
-          font-family: var(--font-plus-jakarta), sans-serif;
+          font-family: var(--font-jetbrains-mono), monospace;
         }
 
         .portal-card p {
