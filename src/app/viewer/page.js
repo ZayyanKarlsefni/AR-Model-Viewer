@@ -52,13 +52,13 @@ function ViewerContent() {
         {loading && (
           <div className="loader-container">
             <div className="spinner"></div>
-            <p className="loading-text">Memuat model 3D Anda...</p>
+            <p className="loading-text">Memuat model 3D...</p>
           </div>
         )}
 
         {error && (
           <div className="error-container">
-            <div className="error-icon">⚠️</div>
+            <div className="error-icon-box">!</div>
             <h2>Error Terjadi</h2>
             <p>{error}</p>
           </div>
@@ -78,7 +78,7 @@ function ViewerContent() {
               class="custom-viewer"
             >
               <button slot="ar-button" id="ar-button">
-                🕶️ Lihat di Ruangan (AR)
+                Lihat di Ruangan (AR)
               </button>
 
               <div id="ar-prompt">
@@ -94,38 +94,46 @@ function ViewerContent() {
       </footer>
 
       <style jsx global>{`
-        /* Global & Reset Styles - Light Mode */
-        body {
+        /* Global & Reset Styles - Light Mode - Prevents double scrollbars */
+        html, body {
           margin: 0;
           padding: 0;
-          font-family: var(--font-jetbrains-mono), monospace;
+          height: 100%;
+          overflow: hidden;
           background: #f8fafc;
           color: #334155;
-          overflow-x: hidden;
+          font-family: var(--font-jetbrains-mono), monospace;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
         }
 
         .viewer-container {
           display: flex;
           flex-direction: column;
-          min-height: 100vh;
+          height: 100vh;
+          width: 100vw;
           background: radial-gradient(circle at 50% 0%, #ffffff 0%, #f1f5f9 100%);
+          box-sizing: border-box;
         }
 
         .viewer-header {
+          flex: 0 0 auto;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 1.25rem 2rem;
+          height: 64px;
+          padding: 0 2rem;
           background: rgba(255, 255, 255, 0.8);
           backdrop-filter: blur(16px);
           border-bottom: 1px solid #e2e8f0;
           z-index: 10;
           box-shadow: 0 1px 2px rgba(0,0,0,0.01);
+          box-sizing: border-box;
         }
 
         .logo-text {
           margin: 0;
-          font-size: 1.4rem;
+          font-size: 1.3rem;
           font-weight: 800;
           letter-spacing: -0.5px;
           color: #0f172a;
@@ -146,16 +154,19 @@ function ViewerContent() {
           border: 1px solid #e2e8f0;
         }
 
+        /* Viewport takes exactly the remaining screen space */
         .viewer-content {
-          flex: 1;
+          flex: 1 1 auto;
           display: flex;
           justify-content: center;
           align-items: center;
           position: relative;
           padding: 1.5rem;
+          box-sizing: border-box;
+          overflow: hidden;
         }
 
-        /* Loader & Error - Modern minimalist cards */
+        /* Loader & Error */
         .loader-container, .error-container {
           text-align: center;
           padding: 3rem 2rem;
@@ -166,6 +177,7 @@ function ViewerContent() {
           max-width: 380px;
           width: 100%;
           animation: fadeIn 0.4s ease-out;
+          box-sizing: border-box;
         }
 
         .spinner {
@@ -185,9 +197,18 @@ function ViewerContent() {
           font-size: 0.95rem;
         }
 
-        .error-icon {
-          font-size: 2.5rem;
-          margin-bottom: 0.75rem;
+        .error-icon-box {
+          font-size: 1.8rem;
+          font-weight: 800;
+          color: #ef4444;
+          width: 50px;
+          height: 50px;
+          border: 3px solid #ef4444;
+          border-radius: 50%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin: 0 auto 1rem;
         }
 
         .error-container h2 {
@@ -203,18 +224,18 @@ function ViewerContent() {
           font-size: 0.9rem;
         }
 
-        /* Model Viewer Wrapper - Pure White modern card */
+        /* Model Viewer Wrapper - Fills content space exactly */
         .model-viewer-wrapper {
           width: 100%;
-          height: calc(100vh - 160px);
-          max-height: 850px;
-          border-radius: 28px;
+          height: 100%;
+          border-radius: 24px;
           overflow: hidden;
           background: #ffffff;
           border: 1px solid #e2e8f0;
-          box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.08);
+          box-shadow: 0 15px 30px -10px rgba(15, 23, 42, 0.06);
           position: relative;
           animation: scaleUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+          box-sizing: border-box;
         }
 
         .custom-viewer {
@@ -224,20 +245,20 @@ function ViewerContent() {
           --poster-color: transparent;
         }
 
-        /* AR Button - Ultra Clean IOS/Stripe-like dark slate button */
+        /* AR Button - Ultra Clean Dark Slate Button */
         #ar-button {
           position: absolute;
-          bottom: 2rem;
+          bottom: 1.5rem;
           left: 50%;
           transform: translateX(-50%);
           background: #0f172a;
           color: #ffffff;
           border: none;
           padding: 0.85rem 1.85rem;
-          border-radius: 14px;
+          border-radius: 12px;
           font-weight: 700;
           font-size: 0.925rem;
-          box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.25);
+          box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.2);
           cursor: pointer;
           transition: all 0.2s ease;
           z-index: 20;
@@ -248,7 +269,7 @@ function ViewerContent() {
         #ar-button:hover {
           background: #1e293b;
           transform: translateX(-50%) translateY(-2px);
-          box-shadow: 0 15px 25px -5px rgba(15, 23, 42, 0.35);
+          box-shadow: 0 12px 25px -4px rgba(15, 23, 42, 0.3);
         }
 
         #ar-button:active {
@@ -259,7 +280,7 @@ function ViewerContent() {
         #ar-prompt {
           position: absolute;
           left: 50%;
-          bottom: 6.5rem;
+          bottom: 6rem;
           transform: translateX(-50%);
           display: none;
           pointer-events: none;
@@ -276,12 +297,21 @@ function ViewerContent() {
         }
 
         .viewer-footer {
+          flex: 0 0 auto;
           text-align: center;
-          padding: 1.25rem;
-          font-size: 0.8rem;
+          height: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.75rem;
           color: #94a3b8;
           border-top: 1px solid #e2e8f0;
           background: #ffffff;
+          box-sizing: border-box;
+        }
+
+        .viewer-footer p {
+          margin: 0;
         }
 
         /* Animations */
@@ -296,7 +326,7 @@ function ViewerContent() {
         }
 
         @keyframes scaleUp {
-          from { transform: scale(0.97); opacity: 0; }
+          from { transform: scale(0.98); opacity: 0; }
           to { transform: scale(1); opacity: 1; }
         }
 
@@ -308,21 +338,24 @@ function ViewerContent() {
         /* Responsive Design - Mobile Optimized */
         @media (max-width: 640px) {
           .viewer-header {
-            padding: 1rem 1.25rem;
+            padding: 0 1.25rem;
+            height: 56px;
           }
           #ar-button {
-            bottom: 1.5rem;
+            bottom: 1.25rem;
             width: 85%;
             text-align: center;
-            border-radius: 12px;
-            padding: 0.9rem 1.5rem;
+            border-radius: 10px;
+            padding: 0.85rem 1.25rem;
           }
           .model-viewer-wrapper {
-            height: calc(100vh - 130px);
-            border-radius: 20px;
+            border-radius: 16px;
           }
           .viewer-content {
-            padding: 0.75rem;
+            padding: 1rem;
+          }
+          .viewer-footer {
+            height: 40px;
           }
         }
       `}</style>
