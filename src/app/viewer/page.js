@@ -18,7 +18,6 @@ function ViewerContent() {
       return;
     }
 
-    // Ambil model URL dari API
     fetch(`/api/model?code=${code}`)
       .then((res) => {
         if (!res.ok) {
@@ -38,7 +37,6 @@ function ViewerContent() {
 
   return (
     <main className="viewer-container">
-      {/* Script Google Model Viewer */}
       <Script
         type="module"
         src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"
@@ -47,14 +45,14 @@ function ViewerContent() {
 
       <header className="viewer-header">
         <h1 className="logo-text">AR Model <span>Lite</span></h1>
-        {code && <span className="model-id">ID: {code.substring(0, 8)}...</span>}
+        {code && <span className="model-id">ID: {code.substring(0, 8)}</span>}
       </header>
 
       <section className="viewer-content">
         {loading && (
           <div className="loader-container">
             <div className="spinner"></div>
-            <p className="loading-text">Memuat Model 3D...</p>
+            <p className="loading-text">Memuat model 3D Anda...</p>
           </div>
         )}
 
@@ -74,12 +72,13 @@ function ViewerContent() {
               ar-modes="webxr scene-viewer quick-look"
               camera-controls
               poster="/poster.webp"
-              shadow-intensity="1"
+              shadow-intensity="1.5"
+              shadow-softness="0.8"
               auto-rotate
               class="custom-viewer"
             >
               <button slot="ar-button" id="ar-button">
-                👋 Lihat di Ruangan Anda (AR)
+                🕶️ Lihat di Ruangan (AR)
               </button>
 
               <div id="ar-prompt">
@@ -91,17 +90,17 @@ function ViewerContent() {
       </section>
 
       <footer className="viewer-footer">
-        <p>© 2026 AR Model Lite | Diklaim Kembali & Diperbaiki</p>
+        <p>© 2026 AR Model Lite | Clean Web & Mobile Viewer</p>
       </footer>
 
       <style jsx global>{`
-        /* Global & Reset Styles */
+        /* Global & Reset Styles - Light Mode */
         body {
           margin: 0;
           padding: 0;
           font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          background: #0d0f14;
-          color: #f3f4f6;
+          background: #f8fafc;
+          color: #334155;
           overflow-x: hidden;
         }
 
@@ -109,43 +108,42 @@ function ViewerContent() {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
-          background: radial-gradient(circle at center, #1b2130 0%, #0d0f14 100%);
+          background: radial-gradient(circle at 50% 0%, #ffffff 0%, #f1f5f9 100%);
         }
 
         .viewer-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 1.5rem 2rem;
-          background: rgba(13, 15, 20, 0.6);
-          backdrop-filter: blur(12px);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          padding: 1.25rem 2rem;
+          background: rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(16px);
+          border-bottom: 1px solid #e2e8f0;
           z-index: 10;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.01);
         }
 
         .logo-text {
           margin: 0;
-          font-size: 1.5rem;
+          font-size: 1.4rem;
           font-weight: 800;
           letter-spacing: -0.5px;
-          background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+          color: #0f172a;
         }
 
         .logo-text span {
           font-weight: 300;
-          color: #9ca3af;
-          -webkit-text-fill-color: #9ca3af;
+          color: #64748b;
         }
 
         .model-id {
-          font-size: 0.85rem;
-          background: rgba(255, 255, 255, 0.08);
+          font-size: 0.8rem;
+          font-weight: 600;
+          background: #f1f5f9;
           padding: 0.35rem 0.75rem;
           border-radius: 9999px;
-          color: #9ca3af;
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          color: #475569;
+          border: 1px solid #e2e8f0;
         }
 
         .viewer-content {
@@ -154,95 +152,103 @@ function ViewerContent() {
           justify-content: center;
           align-items: center;
           position: relative;
-          padding: 1rem;
+          padding: 1.5rem;
         }
 
-        /* Loader & Error */
+        /* Loader & Error - Modern minimalist cards */
         .loader-container, .error-container {
           text-align: center;
-          padding: 3rem;
-          border-radius: 20px;
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(8px);
-          max-width: 400px;
+          padding: 3rem 2rem;
+          border-radius: 24px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.03), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+          max-width: 380px;
           width: 100%;
-          animation: fadeIn 0.5s ease-out;
+          animation: fadeIn 0.4s ease-out;
         }
 
         .spinner {
-          width: 50px;
-          height: 50px;
-          border: 4px solid rgba(59, 130, 246, 0.1);
-          border-left-color: #3b82f6;
+          width: 44px;
+          height: 44px;
+          border: 3.5px solid #f1f5f9;
+          border-left-color: #0f172a;
           border-radius: 50%;
-          margin: 0 auto 1.5rem;
-          animation: spin 1s linear infinite;
+          margin: 0 auto 1.25rem;
+          animation: spin 0.8s linear infinite;
         }
 
         .loading-text {
-          font-weight: 500;
-          color: #9ca3af;
+          font-weight: 600;
+          color: #475569;
           margin: 0;
+          font-size: 0.95rem;
         }
 
         .error-icon {
-          font-size: 3rem;
-          margin-bottom: 1rem;
+          font-size: 2.5rem;
+          margin-bottom: 0.75rem;
         }
 
         .error-container h2 {
           margin: 0 0 0.5rem;
           color: #ef4444;
+          font-size: 1.25rem;
+          font-weight: 700;
         }
 
         .error-container p {
-          color: #9ca3af;
+          color: #64748b;
           margin: 0;
+          font-size: 0.9rem;
         }
 
-        /* Model Viewer Styles */
+        /* Model Viewer Wrapper - Pure White modern card */
         .model-viewer-wrapper {
           width: 100%;
-          height: calc(100vh - 140px);
-          max-height: 800px;
-          border-radius: 24px;
+          height: calc(100vh - 160px);
+          max-height: 850px;
+          border-radius: 28px;
           overflow: hidden;
-          background: rgba(255, 255, 255, 0.01);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-          animation: scaleUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.08);
+          position: relative;
+          animation: scaleUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .custom-viewer {
           width: 100%;
           height: 100%;
+          background-color: #ffffff;
           --poster-color: transparent;
         }
 
-        /* AR Button Customization */
+        /* AR Button - Ultra Clean IOS/Stripe-like dark slate button */
         #ar-button {
           position: absolute;
           bottom: 2rem;
           left: 50%;
           transform: translateX(-50%);
-          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-          color: white;
+          background: #0f172a;
+          color: #ffffff;
           border: none;
-          padding: 0.85rem 1.75rem;
-          border-radius: 9999px;
-          font-weight: 600;
-          font-size: 0.95rem;
-          box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+          padding: 0.85rem 1.85rem;
+          border-radius: 14px;
+          font-weight: 700;
+          font-size: 0.925rem;
+          box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.25);
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: all 0.2s ease;
           z-index: 20;
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          letter-spacing: -0.1px;
         }
 
         #ar-button:hover {
+          background: #1e293b;
           transform: translateX(-50%) translateY(-2px);
-          box-shadow: 0 15px 30px -5px rgba(59, 130, 246, 0.6);
+          box-shadow: 0 15px 25px -5px rgba(15, 23, 42, 0.35);
         }
 
         #ar-button:active {
@@ -253,7 +259,7 @@ function ViewerContent() {
         #ar-prompt {
           position: absolute;
           left: 50%;
-          bottom: 6rem;
+          bottom: 6.5rem;
           transform: translateX(-50%);
           display: none;
           pointer-events: none;
@@ -261,22 +267,21 @@ function ViewerContent() {
         }
 
         #ar-prompt img {
-          width: 50px;
-          filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.4));
+          width: 44px;
+          filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15));
         }
 
-        /* Displays hand prompt when in AR placement Mode */
         model-viewer[ar-status="session-started"] #ar-prompt {
           display: block;
         }
 
         .viewer-footer {
           text-align: center;
-          padding: 1.5rem;
+          padding: 1.25rem;
           font-size: 0.8rem;
-          color: #4b5563;
-          border-top: 1px solid rgba(255, 255, 255, 0.03);
-          background: rgba(13, 15, 20, 0.4);
+          color: #94a3b8;
+          border-top: 1px solid #e2e8f0;
+          background: #ffffff;
         }
 
         /* Animations */
@@ -286,33 +291,38 @@ function ViewerContent() {
         }
 
         @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes scaleUp {
-          from { transform: scale(0.95); opacity: 0; }
+          from { transform: scale(0.97); opacity: 0; }
           to { transform: scale(1); opacity: 1; }
         }
 
         @keyframes moveHand {
           0%, 100% { transform: translate(-50%, 0px); }
-          50% { transform: translate(-30%, -10px); }
+          50% { transform: translate(-30%, -8px); }
         }
 
-        /* Responsive Design */
+        /* Responsive Design - Mobile Optimized */
         @media (max-width: 640px) {
           .viewer-header {
-            padding: 1rem;
+            padding: 1rem 1.25rem;
           }
           #ar-button {
             bottom: 1.5rem;
-            width: 80%;
+            width: 85%;
             text-align: center;
+            border-radius: 12px;
+            padding: 0.9rem 1.5rem;
           }
           .model-viewer-wrapper {
-            height: calc(100vh - 120px);
-            border-radius: 16px;
+            height: calc(100vh - 130px);
+            border-radius: 20px;
+          }
+          .viewer-content {
+            padding: 0.75rem;
           }
         }
       `}</style>
@@ -323,7 +333,7 @@ function ViewerContent() {
 export default function Viewer() {
   return (
     <Suspense fallback={
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0d0f14', color: '#9ca3af' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8fafc', color: '#64748b' }}>
         <div>Memuat antarmuka...</div>
       </div>
     }>

@@ -13,9 +13,9 @@ export default function Home() {
       <section className="hero-section">
         <div className="hero-content">
           <div className="security-tag">🛡️ 100% Aman & Terlindungi</div>
-          <h2 className="hero-title">Bawa Model 3D Anda Ke Dunia Nyata Secara Mandiri</h2>
+          <h2 className="hero-title">Visualisasikan Model 3D Anda di Dunia Nyata</h2>
           <p className="hero-description">
-            Sistem Web Viewer terdesentralisasi untuk Autodesk Inventor. Konversikan model CAD Anda menjadi format 3D/AR secara instan, aman, dan tanpa data bocor ke pihak asing.
+            Sistem Web Viewer minimalis untuk Autodesk Inventor. Ekspor model CAD Anda secara instan dan aman, tanpa perantara pihak ketiga.
           </p>
           <div className="hero-buttons">
             <div className="status-indicator">
@@ -28,41 +28,41 @@ export default function Home() {
         <div className="features-grid">
           <div className="feature-card">
             <div className="feature-icon">🔒</div>
-            <h3>Keamanan Penuh</h3>
-            <p>Model diunggah langsung ke Vercel Blob Storage milik Anda sendiri. Tidak ada data yang dikirim ke server luar.</p>
+            <h3>Penyimpanan Pribadi</h3>
+            <p>Model diunggah langsung ke Vercel Blob Storage milik Anda sendiri. Privasi dan hak cipta proyek Anda terjamin penuh.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon">🕶️</div>
             <h3>Augmented Reality</h3>
-            <p>Mendukung penuh teknologi AR bawaan Android (Scene Viewer) dan iOS (Quick Look) langsung dari browser.</p>
+            <p>Mendukung WebXR (Android) dan AR Quick Look (iOS) untuk menampilkan proyek langsung di meja kerja Anda.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon">⚡</div>
-            <h3>Integrasi Inventor</h3>
-            <p>Ekspor langsung dari Inventor. QR Code disematkan otomatis ke lembar gambar Anda untuk dipindai klien.</p>
+            <h3>Sematkan Otomatis</h3>
+            <p>QR Code tersemat langsung di lembar gambar kerja Inventor. Cukup pindai menggunakan kamera HP untuk melihat.</p>
           </div>
         </div>
       </section>
 
       <footer className="landing-footer">
-        <p>© 2026 AR Model Lite | Reclaimed Project | Hosted on Vercel</p>
+        <p>© 2026 AR Model Lite | Reclaimed Project | Light & Clean Edition</p>
       </footer>
 
       <style jsx>{`
         .landing-container {
           min-height: 100vh;
-          background: radial-gradient(circle at center, #1b2130 0%, #0d0f14 100%);
-          color: #f3f4f6;
+          background: radial-gradient(circle at 50% 0%, #f8fafc 0%, #f1f5f9 100%);
+          color: #334155;
           display: flex;
           flex-direction: column;
-          font-family: 'Outfit', 'Inter', sans-serif;
+          font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
         }
 
         .landing-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 2rem;
+          padding: 1.75rem 2rem;
           max-width: 1200px;
           width: 100%;
           margin: 0 auto;
@@ -71,34 +71,35 @@ export default function Home() {
 
         .logo-text {
           margin: 0;
-          font-size: 1.8rem;
+          font-size: 1.6rem;
           font-weight: 800;
-          letter-spacing: -0.5px;
-          background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+          letter-spacing: -0.75px;
+          color: #0f172a;
         }
 
         .logo-text span {
           font-weight: 300;
-          color: #9ca3af;
-          -webkit-text-fill-color: #9ca3af;
+          color: #64748b;
         }
 
         .vercel-badge {
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: #e5e7eb;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          color: #475569;
           text-decoration: none;
-          padding: 0.5rem 1rem;
+          padding: 0.45rem 0.95rem;
           border-radius: 9999px;
-          font-size: 0.85rem;
-          font-weight: 500;
-          transition: background 0.2s;
+          font-size: 0.8rem;
+          font-weight: 600;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+          transition: all 0.2s ease;
         }
 
         .vercel-badge:hover {
-          background: rgba(255, 255, 255, 0.1);
+          background: #f8fafc;
+          border-color: #cbd5e1;
+          color: #0f172a;
+          transform: translateY(-1px);
         }
 
         .hero-section {
@@ -110,59 +111,58 @@ export default function Home() {
           max-width: 1000px;
           width: 100%;
           margin: 0 auto;
-          padding: 4rem 2rem;
+          padding: 3rem 2rem 5rem;
           text-align: center;
           box-sizing: border-box;
         }
 
         .hero-content {
           margin-bottom: 4rem;
-          animation: fadeIn 0.8s ease-out;
+          animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .security-tag {
           display: inline-block;
-          background: rgba(16, 185, 129, 0.1);
-          color: #10b981;
+          background: rgba(16, 185, 129, 0.08);
+          color: #065f46;
           border: 1px solid rgba(16, 185, 129, 0.2);
-          padding: 0.4rem 1rem;
+          padding: 0.35rem 0.95rem;
           border-radius: 9999px;
-          font-size: 0.9rem;
+          font-size: 0.85rem;
           font-weight: 600;
           margin-bottom: 1.5rem;
+          letter-spacing: -0.1px;
         }
 
         .hero-title {
-          font-size: 3rem;
+          font-size: 2.8rem;
           font-weight: 800;
           line-height: 1.2;
-          letter-spacing: -1px;
-          margin: 0 0 1.5rem;
-          background: linear-gradient(135deg, #ffffff 0%, #d1d5db 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+          letter-spacing: -1.25px;
+          margin: 0 0 1.25rem;
+          color: #0f172a;
         }
 
         .hero-description {
-          font-size: 1.25rem;
+          font-size: 1.15rem;
           line-height: 1.6;
-          color: #9ca3af;
-          max-width: 700px;
-          margin: 0 auto 2.5rem;
+          color: #64748b;
+          max-width: 620px;
+          margin: 0 auto 2.25rem;
         }
 
         .status-indicator {
-          display: flex;
+          display: inline-flex;
           align-items: center;
-          justify-content: center;
-          gap: 0.75rem;
-          font-size: 0.95rem;
-          color: #9ca3af;
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          padding: 0.75rem 1.5rem;
+          gap: 0.65rem;
+          font-size: 0.9rem;
+          color: #475569;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          padding: 0.65rem 1.25rem;
           border-radius: 9999px;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+          font-weight: 500;
         }
 
         .pulse-dot {
@@ -170,8 +170,8 @@ export default function Home() {
           height: 8px;
           background-color: #10b981;
           border-radius: 50%;
-          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-          animation: pulse 1.5s infinite;
+          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+          animation: pulse 2s infinite;
         }
 
         .features-grid {
@@ -179,66 +179,67 @@ export default function Home() {
           grid-template-columns: repeat(3, 1fr);
           gap: 2rem;
           width: 100%;
-          animation: slideUp 0.8s ease-out;
+          animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .feature-card {
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
           border-radius: 20px;
-          padding: 2rem 1.5rem;
+          padding: 2.25rem 1.75rem;
           text-align: left;
-          transition: transform 0.3s, border-color 0.3s;
-          backdrop-filter: blur(8px);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
         }
 
         .feature-card:hover {
-          transform: translateY(-5px);
-          border-color: rgba(59, 130, 246, 0.3);
+          transform: translateY(-4px);
+          border-color: #cbd5e1;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
         }
 
         .feature-icon {
-          font-size: 2rem;
-          margin-bottom: 1rem;
+          font-size: 1.8rem;
+          margin-bottom: 1.25rem;
         }
 
         .feature-card h3 {
-          font-size: 1.2rem;
+          font-size: 1.15rem;
           font-weight: 700;
-          margin: 0 0 0.75rem;
-          color: #e5e7eb;
+          margin: 0 0 0.65rem;
+          color: #0f172a;
         }
 
         .feature-card p {
-          font-size: 0.95rem;
-          line-height: 1.5;
-          color: #9ca3af;
+          font-size: 0.925rem;
+          line-height: 1.55;
+          color: #64748b;
           margin: 0;
         }
 
         .landing-footer {
           text-align: center;
           padding: 2rem;
-          font-size: 0.85rem;
-          color: #4b5563;
-          border-top: 1px solid rgba(255, 255, 255, 0.03);
-          background: rgba(13, 15, 20, 0.4);
+          font-size: 0.8rem;
+          color: #94a3b8;
+          border-top: 1px solid #e2e8f0;
+          background: #ffffff;
         }
 
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
+          from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes slideUp {
-          from { opacity: 0; transform: translateY(20px); }
+          from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes pulse {
           0% {
             transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
           }
           70% {
             transform: scale(1);
@@ -251,12 +252,21 @@ export default function Home() {
         }
 
         @media (max-width: 768px) {
+          .landing-header {
+            padding: 1.25rem 1.5rem;
+          }
+          .hero-section {
+            padding: 2rem 1.5rem 4rem;
+          }
           .hero-title {
-            font-size: 2.2rem;
+            font-size: 2.1rem;
           }
           .features-grid {
             grid-template-columns: 1fr;
-            gap: 1.5rem;
+            gap: 1.25rem;
+          }
+          .feature-card {
+            padding: 1.75rem 1.5rem;
           }
         }
       `}</style>
