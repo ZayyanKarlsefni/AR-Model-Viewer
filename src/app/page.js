@@ -3,75 +3,303 @@
 export default function Home() {
   return (
     <main className="landing-container">
+      {/* Navigation Header */}
       <header className="landing-header">
-        <h1 className="logo-text">AR Model <span>Lite</span></h1>
-        <a href="https://vercel.com" target="_blank" rel="noreferrer" className="vercel-badge">
-          ▲ Powered by Vercel
-        </a>
+        <div className="logo-group">
+          <span className="logo-dot"></span>
+          <h1 className="logo-text">AR Model <span>Lite</span></h1>
+        </div>
+        <nav className="nav-menu">
+          <a href="#features" className="nav-link">Fitur</a>
+          <a href="#docs" className="nav-link">Dokumentasi</a>
+          <a href="#security" className="nav-link">Keamanan</a>
+          <a href="https://github.com/ZayyanKarlsefni/AR-Model-Viewer" target="_blank" rel="noreferrer" className="nav-link">Github</a>
+        </nav>
+        <div className="nav-actions">
+          <span className="nav-sign-in">Sign In</span>
+          <a href="#get-started" className="nav-btn-dark">Mulai Sekarang</a>
+        </div>
       </header>
 
+      {/* Hero Section */}
       <section className="hero-section">
-        <div className="hero-content">
-          <div className="security-tag">🛡️ 100% Aman & Terlindungi</div>
-          <h2 className="hero-title">Visualisasikan Model 3D Anda di Dunia Nyata</h2>
-          <p className="hero-description">
-            Sistem Web Viewer minimalis untuk Autodesk Inventor. Ekspor model CAD Anda secara instan dan aman, tanpa perantara pihak ketiga.
-          </p>
-          <div className="hero-buttons">
-            <div className="status-indicator">
-              <span className="pulse-dot"></span>
-              Sistem Aktif & Siap Menerima Unggahan
-            </div>
-          </div>
+        <div className="security-tag">
+          <span className="security-dot"></span>
+          🛡️ 100% Aman & Terlindungi di Server Anda
+        </div>
+        
+        <h2 className="hero-title">
+          Give your CAD models <br />
+          the viewer they deserve
+        </h2>
+        
+        <p className="hero-description">
+          Sistem Web Viewer 3D & Augmented Reality minimalis yang dirancang khusus untuk Autodesk Inventor. Ekspor model CAD Anda secara instan dan aman langsung ke Vercel Blob Anda sendiri.
+        </p>
+        
+        <div className="hero-buttons">
+          <a href="#get-started" className="btn-primary">Hubungkan Inventor</a>
+          <a href="#docs" className="btn-secondary">Lihat Dokumentasi</a>
         </div>
 
-        <div className="features-grid">
-          <div className="feature-card">
-            <div className="feature-icon">🔒</div>
-            <h3>Penyimpanan Pribadi</h3>
-            <p>Model diunggah langsung ke Vercel Blob Storage milik Anda sendiri. Privasi dan hak cipta proyek Anda terjamin penuh.</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">🕶️</div>
-            <h3>Augmented Reality</h3>
-            <p>Mendukung WebXR (Android) dan AR Quick Look (iOS) untuk menampilkan proyek langsung di meja kerja Anda.</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">⚡</div>
-            <h3>Sematkan Otomatis</h3>
-            <p>QR Code tersemat langsung di lembar gambar kerja Inventor. Cukup pindai menggunakan kamera HP untuk melihat.</p>
+        {/* Central Dashboard Mockup (Luxurious dark accent mockup) */}
+        <div className="dashboard-mockup-wrapper">
+          <div className="dashboard-mockup">
+            <div className="mockup-header">
+              <div className="mockup-dots">
+                <span className="dot-red"></span>
+                <span className="dot-yellow"></span>
+                <span className="dot-green"></span>
+              </div>
+              <div className="mockup-title">AR Viewer Dashboard — Active Model</div>
+              <div className="mockup-status">
+                <span className="status-pulse"></span> Online
+              </div>
+            </div>
+            
+            <div className="mockup-body">
+              <div className="mockup-sidebar">
+                <div className="sidebar-item active">📁 Model Aktif</div>
+                <div className="sidebar-item">📐 Dimensi & Skala</div>
+                <div className="sidebar-item">🕶️ AR Settings</div>
+                <div className="sidebar-item">⚙️ Pengaturan</div>
+              </div>
+              
+              <div className="mockup-viewport">
+                {/* Simulated 3D object rendering */}
+                <div className="simulated-3d-container">
+                  <div className="3d-object-ring"></div>
+                  <div className="3d-object-sphere">
+                    <div className="sphere-inner"></div>
+                  </div>
+                  <div className="viewport-overlay">
+                    <div className="overlay-badge">model-viewer 3D Active</div>
+                    <div className="overlay-controls">
+                      <span>🔄 Putar 360°</span>
+                      <span>🔍 Zoom</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <footer className="landing-footer">
-        <p>© 2026 AR Model Lite | Reclaimed Project | Light & Clean Edition</p>
+      {/* Features Grid Section (Build a better website, faster.) */}
+      <section className="features-section" id="features">
+        <div className="section-header">
+          <span className="section-subtitle">Visualisasikan lebih cepat, lebih aman.</span>
+          <h3 className="section-title">Build a better presentation, faster.</h3>
+        </div>
+
+        <div className="features-grid">
+          {/* Card 1: 100+ components (Inventor integration) */}
+          <div className="feature-card large-card">
+            <div className="card-content">
+              <div className="card-icon">⚡</div>
+              <h4>Integrasi Inventor Cepat</h4>
+              <p>Ekspor langsung dari Autodesk Inventor dengan satu klik. QR code dibuat otomatis dan langsung disematkan ke lembar gambar kerja Anda.</p>
+            </div>
+            <div className="card-graphic-wireframe">
+              <div className="wireframe-circle"></div>
+              <div className="wireframe-circle horizontal"></div>
+              <div className="wireframe-dots"></div>
+            </div>
+          </div>
+
+          {/* Card 2: You're in control */}
+          <div className="feature-card">
+            <div className="card-content">
+              <div className="card-icon">🔒</div>
+              <h4>Anda Pemegang Kendali</h4>
+              <p>Data model disimpan di Vercel Blob milik Anda sendiri. Tidak ada server pihak ketiga, pelacakan data, atau batasan akses.</p>
+            </div>
+            <div className="card-graphic-rocket">
+              <div className="rocket-icon-glow">🚀</div>
+            </div>
+          </div>
+
+          {/* Card 3: Fits light into your stack */}
+          <div className="feature-card">
+            <div className="card-content">
+              <div className="card-icon">📱</div>
+              <h4>Responsif & Kompatibel</h4>
+              <p>Dirancang khusus agar berjalan mulus di semua perangkat. Tampilan desktop super tajam dan mode AR responsif di layar HP Anda.</p>
+            </div>
+            <div className="card-graphic-devices">
+              <div className="device-screen phone"></div>
+              <div className="device-screen desktop"></div>
+            </div>
+          </div>
+
+          {/* Card 4: Data-agnostic */}
+          <div className="feature-card large-card">
+            <div className="card-content">
+              <div className="card-icon">🗄️</div>
+              <h4>Manajemen File Aman</h4>
+              <p>Mendukung model assembly berukuran besar hingga 500 MB melalui direct-upload API token. Penyimpanan file efisien dengan Vercel Blob.</p>
+            </div>
+            <div className="card-graphic-database">
+              <div className="db-layer"></div>
+              <div className="db-layer"></div>
+              <div className="db-layer"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Checklist Section (Everything you need. Nothing you don't.) */}
+      <section className="checklist-section">
+        <div className="section-header">
+          <h3 className="section-title">Everything you need. Nothing you don't.</h3>
+          <p className="section-desc">Seluruh alat presentasi 3D dan AR profesional, siap pakai tanpa kerumitan konfigurasi.</p>
+        </div>
+
+        <div className="checklist-grid">
+          <div className="checklist-item">
+            <span className="check-icon">✓</span>
+            <div>
+              <h5>Aksesibilitas Tinggi</h5>
+              <p>Pindai langsung menggunakan kamera HP default tanpa perlu mengunduh aplikasi tambahan.</p>
+            </div>
+          </div>
+          <div className="checklist-item">
+            <span className="check-icon">✓</span>
+            <div>
+              <h5>Layout Responsif</h5>
+              <p>Antarmuka web viewer otomatis menyesuaikan dengan orientasi dan ukuran layar handphone.</p>
+            </div>
+          </div>
+          <div className="checklist-item">
+            <span className="check-icon">✓</span>
+            <div>
+              <h5>Tema Terang & Gelap</h5>
+              <p>Antarmuka bersih putih mewah dengan viewport gelap kontras tinggi untuk rendering model maksimal.</p>
+            </div>
+          </div>
+          <div className="checklist-item">
+            <span className="check-icon">✓</span>
+            <div>
+              <h5>Augmented Reality (AR)</h5>
+              <p>Mendukung Google Scene Viewer (Android) dan Apple Quick Look (iOS) secara bawaan.</p>
+            </div>
+          </div>
+          <div className="checklist-item">
+            <span className="check-icon">✓</span>
+            <div>
+              <h5>Performa Kecepatan Tinggi</h5>
+              <p>File model langsung dialirkan dari jaringan CDN Vercel global untuk loading secepat kilat.</p>
+            </div>
+          </div>
+          <div className="checklist-item">
+            <span className="check-icon">✓</span>
+            <div>
+              <h5>Bebas Backdoor Lisensi</h5>
+              <p>Sistem lisensi uji coba ilegal dari pencuri telah dibersihkan sepenuhnya, bebas digunakan sepuasnya.</p>
+            </div>
+          </div>
+          <div className="checklist-item">
+            <span className="check-icon">✓</span>
+            <div>
+              <h5>Kepatuhan Standar Industri</h5>
+              <p>Menggunakan format file standar GLTF/GLB biner yang didukung luas oleh perangkat industri.</p>
+            </div>
+          </div>
+          <div className="checklist-item">
+            <span className="check-icon">✓</span>
+            <div>
+              <h5>Penyimpanan Blob Aman</h5>
+              <p>Koneksi terenkripsi penuh antara komputer Inventor Anda langsung ke Vercel Blob.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Bottom Light-Glow Section (Quality you can trust. And build on.) */}
+      <section className="glow-section" id="security">
+        <div className="glow-content">
+          <span className="glow-badge">Quality you can trust. And build on.</span>
+          <h3 className="glow-title">Kembangkan Terus Solusi CAD & AR Anda</h3>
+          <p className="glow-description">
+            Kode proyek ini sepenuhnya open-source dan berada di bawah kendali Anda sendiri. Hubungkan Vercel Anda, pasang add-in Inventor-nya, dan buat klien Anda kagum dengan presentasi AR tercanggih di kelasnya.
+          </p>
+          <div className="glow-buttons">
+            <a href="https://github.com/ZayyanKarlsefni/AR-Model-Viewer" target="_blank" rel="noreferrer" className="btn-primary-white">Kunjungi GitHub Repositori</a>
+          </div>
+        </div>
+        
+        {/* Glow effect matching Figma style */}
+        <div className="glow-universe-container">
+          <div className="glow-universe-arc"></div>
+          <div className="glow-universe-light"></div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="landing-footer-main">
+        <div className="footer-content">
+          <div className="footer-brand">
+            <h1 className="logo-text">AR Model <span>Lite</span></h1>
+            <p>Sistem Presentasi CAD 3D & AR Tercanggih secara Mandiri.</p>
+          </div>
+          <div className="footer-links">
+            <div className="link-group">
+              <h6>Proyek</h6>
+              <a href="#features">Fitur Utama</a>
+              <a href="#security">Bypass Lisensi</a>
+              <a href="https://github.com/ZayyanKarlsefni/AR-Model-Viewer" target="_blank" rel="noreferrer">GitHub</a>
+            </div>
+            <div className="link-group">
+              <h6>Server</h6>
+              <a href="https://vercel.com" target="_blank" rel="noreferrer">Vercel Dashboard</a>
+              <a href="https://vercel.com/docs/storage/blob" target="_blank" rel="noreferrer">Vercel Blob Docs</a>
+            </div>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <p>© 2026 AR Model Lite | Reclaimed & Rebuilt by Antigravity | All Rights Reserved.</p>
+        </div>
       </footer>
 
       <style jsx>{`
+        /* Global Container styling - Apple/Stripe Luxurious White with Dark Accents */
         .landing-container {
-          min-height: 100vh;
-          background: radial-gradient(circle at 50% 0%, #f8fafc 0%, #f1f5f9 100%);
+          background-color: #fcfcfd;
           color: #334155;
-          display: flex;
-          flex-direction: column;
-          font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+          font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          min-height: 100vh;
+          overflow-x: hidden;
         }
 
+        /* Navigation Header */
         .landing-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 1.75rem 2rem;
-          max-width: 1200px;
-          width: 100%;
+          padding: 1.5rem 3rem;
+          max-width: 1250px;
           margin: 0 auto;
           box-sizing: border-box;
+          border-bottom: 1px solid #f1f5f9;
+        }
+
+        .logo-group {
+          display: flex;
+          align-items: center;
+          gap: 0.65rem;
+        }
+
+        .logo-dot {
+          width: 10px;
+          height: 10px;
+          background-color: #0f172a;
+          border-radius: 50%;
         }
 
         .logo-text {
           margin: 0;
-          font-size: 1.6rem;
+          font-size: 1.4rem;
           font-weight: 800;
           letter-spacing: -0.75px;
           color: #0f172a;
@@ -82,132 +310,424 @@ export default function Home() {
           color: #64748b;
         }
 
-        .vercel-badge {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+        .nav-menu {
+          display: flex;
+          gap: 2.25rem;
+        }
+
+        .nav-link {
           color: #475569;
           text-decoration: none;
-          padding: 0.45rem 0.95rem;
-          border-radius: 9999px;
-          font-size: 0.8rem;
-          font-weight: 600;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-          transition: all 0.2s ease;
+          font-size: 0.925rem;
+          font-weight: 500;
+          transition: color 0.25s ease;
         }
 
-        .vercel-badge:hover {
-          background: #f8fafc;
-          border-color: #cbd5e1;
+        .nav-link:hover {
           color: #0f172a;
-          transform: translateY(-1px);
         }
 
+        .nav-actions {
+          display: flex;
+          align-items: center;
+          gap: 1.75rem;
+        }
+
+        .nav-sign-in {
+          color: #475569;
+          font-size: 0.925rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: color 0.25s ease;
+        }
+
+        .nav-sign-in:hover {
+          color: #0f172a;
+        }
+
+        .nav-btn-dark {
+          background-color: #0f172a;
+          color: #ffffff;
+          text-decoration: none;
+          padding: 0.6rem 1.2rem;
+          border-radius: 12px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+          transition: all 0.25s ease;
+        }
+
+        .nav-btn-dark:hover {
+          background-color: #1e293b;
+          transform: translateY(-1px);
+          box-shadow: 0 6px 15px rgba(15, 23, 42, 0.25);
+        }
+
+        /* Hero Section */
         .hero-section {
-          flex: 1;
+          max-width: 1100px;
+          margin: 0 auto;
+          padding: 5rem 2rem 6rem;
+          text-align: center;
           display: flex;
           flex-direction: column;
-          justify-content: center;
           align-items: center;
-          max-width: 1000px;
-          width: 100%;
-          margin: 0 auto;
-          padding: 3rem 2rem 5rem;
-          text-align: center;
           box-sizing: border-box;
         }
 
-        .hero-content {
-          margin-bottom: 4rem;
-          animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        .security-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: #ffffff;
+          color: #065f46;
+          border: 1px solid #d1fae5;
+          padding: 0.45rem 1rem;
+          border-radius: 9999px;
+          font-size: 0.825rem;
+          font-weight: 700;
+          margin-bottom: 2rem;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.01);
         }
 
-        .security-tag {
-          display: inline-block;
-          background: rgba(16, 185, 129, 0.08);
-          color: #065f46;
-          border: 1px solid rgba(16, 185, 129, 0.2);
-          padding: 0.35rem 0.95rem;
-          border-radius: 9999px;
-          font-size: 0.85rem;
-          font-weight: 600;
-          margin-bottom: 1.5rem;
-          letter-spacing: -0.1px;
+        .security-dot {
+          width: 6px;
+          height: 6px;
+          background-color: #10b981;
+          border-radius: 50%;
         }
 
         .hero-title {
-          font-size: 2.8rem;
+          font-size: 3.8rem;
           font-weight: 800;
-          line-height: 1.2;
-          letter-spacing: -1.25px;
-          margin: 0 0 1.25rem;
+          line-height: 1.1;
+          letter-spacing: -1.8px;
           color: #0f172a;
+          margin: 0 0 1.5rem;
         }
 
         .hero-description {
-          font-size: 1.15rem;
+          font-size: 1.2rem;
           line-height: 1.6;
           color: #64748b;
-          max-width: 620px;
-          margin: 0 auto 2.25rem;
+          max-width: 680px;
+          margin: 0 auto 2.5rem;
         }
 
-        .status-indicator {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.65rem;
-          font-size: 0.9rem;
-          color: #475569;
-          background: #ffffff;
+        .hero-buttons {
+          display: flex;
+          gap: 1.25rem;
+          margin-bottom: 5rem;
+        }
+
+        .btn-primary {
+          background-color: #0f172a;
+          color: #ffffff;
+          text-decoration: none;
+          padding: 0.85rem 1.85rem;
+          border-radius: 14px;
+          font-weight: 700;
+          font-size: 0.95rem;
+          box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.25);
+          transition: all 0.25s ease;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-primary:hover {
+          background-color: #1e293b;
+          transform: translateY(-2px);
+          box-shadow: 0 15px 25px -5px rgba(15, 23, 42, 0.35);
+        }
+
+        .btn-secondary {
+          background-color: #ffffff;
+          color: #334155;
+          text-decoration: none;
+          padding: 0.85rem 1.85rem;
+          border-radius: 14px;
+          font-weight: 700;
+          font-size: 0.95rem;
           border: 1px solid #e2e8f0;
-          padding: 0.65rem 1.25rem;
-          border-radius: 9999px;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+          box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+          transition: all 0.25s ease;
+        }
+
+        .btn-secondary:hover {
+          background-color: #f8fafc;
+          border-color: #cbd5e1;
+          transform: translateY(-2px);
+        }
+
+        /* Central Dashboard Mockup (Luxurious dark viewer) */
+        .dashboard-mockup-wrapper {
+          width: 100%;
+          max-width: 900px;
+          background: linear-gradient(135deg, #e2e8f0 0%, #f1f5f9 100%);
+          padding: 0.75rem;
+          border-radius: 28px;
+          box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.08);
+          border: 1px solid #e2e8f0;
+          animation: scaleUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .dashboard-mockup {
+          background: #0f172a;
+          border-radius: 20px;
+          overflow: hidden;
+          text-align: left;
+          display: flex;
+          flex-direction: column;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .mockup-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.95rem 1.5rem;
+          background: rgba(255, 255, 255, 0.02);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .mockup-dots {
+          display: flex;
+          gap: 0.45rem;
+        }
+
+        .mockup-dots span {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          display: inline-block;
+        }
+
+        .dot-red { background-color: #ef4444; }
+        .dot-yellow { background-color: #f59e0b; }
+        .dot-green { background-color: #10b981; }
+
+        .mockup-title {
+          font-size: 0.8rem;
+          color: #94a3b8;
           font-weight: 500;
         }
 
-        .pulse-dot {
-          width: 8px;
-          height: 8px;
+        .mockup-status {
+          font-size: 0.75rem;
+          color: #10b981;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 0.35rem;
+        }
+
+        .status-pulse {
+          width: 6px;
+          height: 6px;
           background-color: #10b981;
           border-radius: 50%;
-          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
-          animation: pulse 2s infinite;
+          display: inline-block;
+          animation: pulse-green 1.5s infinite;
+        }
+
+        .mockup-body {
+          display: flex;
+          height: 480px;
+        }
+
+        .mockup-sidebar {
+          width: 200px;
+          background: rgba(255, 255, 255, 0.01);
+          border-right: 1px solid rgba(255, 255, 255, 0.05);
+          padding: 1.25rem 0.75rem;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          gap: 0.45rem;
+        }
+
+        .sidebar-item {
+          padding: 0.65rem 0.95rem;
+          border-radius: 10px;
+          color: #64748b;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+        }
+
+        .sidebar-item.active {
+          color: #ffffff;
+          background: rgba(255, 255, 255, 0.05);
+        }
+
+        .mockup-viewport {
+          flex: 1;
+          background: radial-gradient(circle at center, #1b2130 0%, #090d16 100%);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+          padding: 2rem;
+        }
+
+        .simulated-3d-container {
+          position: relative;
+          width: 250px;
+          height: 250px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        /* 3D Wireframe Orbit effect matching Figma */
+        .3d-object-ring {
+          position: absolute;
+          width: 200px;
+          height: 200px;
+          border: 1px dashed rgba(59, 130, 246, 0.3);
+          border-radius: 50%;
+          transform: rotateX(75deg);
+          animation: spin 8s linear infinite;
+        }
+
+        .3d-object-sphere {
+          width: 100px;
+          height: 100px;
+          background: radial-gradient(circle at 30% 30%, #3b82f6 0%, #1d4ed8 70%, #1e3a8a 100%);
+          border-radius: 50%;
+          box-shadow: 0 0 40px rgba(59, 130, 246, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.3);
+          animation: float 4s ease-in-out infinite;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .sphere-inner {
+          width: 50px;
+          height: 50px;
+          border: 1.5px solid rgba(255, 255, 255, 0.15);
+          border-radius: 50%;
+          transform: rotateY(45deg);
+          animation: spin 4s linear infinite;
+        }
+
+        .viewport-overlay {
+          position: absolute;
+          bottom: 1.5rem;
+          left: 1.5rem;
+          right: 1.5rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .overlay-badge {
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          color: #94a3b8;
+          font-size: 0.75rem;
+          padding: 0.35rem 0.65rem;
+          border-radius: 9999px;
+          font-weight: 500;
+        }
+
+        .overlay-controls {
+          display: flex;
+          gap: 0.75rem;
+          color: #64748b;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+
+        /* Features Section */
+        .features-section {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 6rem 2rem;
+          box-sizing: border-box;
+        }
+
+        .section-header {
+          text-align: center;
+          margin-bottom: 4rem;
+        }
+
+        .section-subtitle {
+          display: inline-block;
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: #2563eb;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          margin-bottom: 0.75rem;
+        }
+
+        .section-title {
+          font-size: 2.3rem;
+          font-weight: 800;
+          letter-spacing: -0.9px;
+          color: #0f172a;
+          margin: 0 0 1rem;
+        }
+
+        .section-desc {
+          font-size: 1.05rem;
+          color: #64748b;
+          max-width: 500px;
+          margin: 0 auto;
+          line-height: 1.5;
         }
 
         .features-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 2rem;
-          width: 100%;
-          animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+          grid-template-rows: auto auto;
+          gap: 1.5rem;
         }
 
+        /* Feature Card styling */
         .feature-card {
           background: #ffffff;
           border: 1px solid #e2e8f0;
-          border-radius: 20px;
-          padding: 2.25rem 1.75rem;
-          text-align: left;
+          border-radius: 24px;
+          padding: 2.25rem;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          position: relative;
+          overflow: hidden;
+          min-height: 320px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01);
           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
         }
 
         .feature-card:hover {
           transform: translateY(-4px);
           border-color: #cbd5e1;
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+          box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.04);
         }
 
-        .feature-icon {
-          font-size: 1.8rem;
+        .feature-card.large-card {
+          grid-column: span 2;
+          flex-direction: row;
+          align-items: center;
+          gap: 2rem;
+        }
+
+        .feature-card.large-card .card-content {
+          flex: 1;
+        }
+
+        .card-icon {
+          font-size: 1.75rem;
           margin-bottom: 1.25rem;
         }
 
-        .feature-card h3 {
-          font-size: 1.15rem;
+        .feature-card h4 {
+          font-size: 1.2rem;
           font-weight: 700;
-          margin: 0 0 0.65rem;
           color: #0f172a;
+          margin: 0 0 0.65rem;
         }
 
         .feature-card p {
@@ -217,29 +737,335 @@ export default function Home() {
           margin: 0;
         }
 
-        .landing-footer {
+        /* Card Graphics matching Figma details */
+        .card-graphic-wireframe {
+          width: 160px;
+          height: 160px;
+          border: 1px solid #f1f5f9;
+          background: radial-gradient(circle, #f8fafc 0%, transparent 70%);
+          border-radius: 50%;
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .wireframe-circle {
+          position: absolute;
+          width: 120px;
+          height: 120px;
+          border: 1px solid #e2e8f0;
+          border-radius: 50%;
+          transform: rotateY(55deg);
+        }
+
+        .wireframe-circle.horizontal {
+          transform: rotateX(55deg);
+        }
+
+        .card-graphic-rocket {
+          height: 100px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #f8fafc;
+          border-radius: 16px;
+          border: 1px solid #f1f5f9;
+          margin-top: 1.5rem;
+        }
+
+        .rocket-icon-glow {
+          font-size: 2.2rem;
+          filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.2));
+          animation: float 3s ease-in-out infinite;
+        }
+
+        .card-graphic-devices {
+          display: flex;
+          justify-content: center;
+          align-items: flex-end;
+          gap: 0.75rem;
+          height: 90px;
+          margin-top: 1.5rem;
+        }
+
+        .device-screen {
+          background: #0f172a;
+          border: 1.5px solid rgba(255, 255, 255, 0.05);
+          border-radius: 8px 8px 0 0;
+        }
+
+        .device-screen.desktop {
+          width: 90px;
+          height: 60px;
+        }
+
+        .device-screen.phone {
+          width: 32px;
+          height: 52px;
+          border-radius: 6px;
+        }
+
+        .card-graphic-database {
+          width: 140px;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .db-layer {
+          height: 24px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+          position: relative;
+        }
+
+        .db-layer::after {
+          content: '';
+          position: absolute;
+          left: 10px;
+          top: 9px;
+          width: 6px;
+          height: 6px;
+          background-color: #10b981;
+          border-radius: 50%;
+        }
+
+        /* Checklist Section */
+        .checklist-section {
+          background-color: #ffffff;
+          border-top: 1px solid #f1f5f9;
+          border-bottom: 1px solid #f1f5f9;
+          padding: 6rem 2rem;
+          box-sizing: border-box;
+        }
+
+        .checklist-grid {
+          max-width: 1100px;
+          margin: 4rem auto 0;
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 2.5rem 2rem;
+        }
+
+        .checklist-item {
+          display: flex;
+          gap: 0.95rem;
+          text-align: left;
+        }
+
+        .check-icon {
+          color: #0f172a;
+          font-weight: 900;
+          font-size: 1.05rem;
+          line-height: 1.35;
+        }
+
+        .checklist-item h5 {
+          margin: 0 0 0.45rem;
+          font-size: 0.975rem;
+          font-weight: 700;
+          color: #0f172a;
+        }
+
+        .checklist-item p {
+          margin: 0;
+          font-size: 0.85rem;
+          line-height: 1.5;
+          color: #64748b;
+        }
+
+        /* Bottom Light-Glow Section (Figma rising-planet light effect) */
+        .glow-section {
+          background-color: #0d0f14;
+          color: #ffffff;
+          padding: 7rem 2rem 0;
           text-align: center;
-          padding: 2rem;
+          position: relative;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          box-sizing: border-box;
+        }
+
+        .glow-content {
+          max-width: 720px;
+          margin-bottom: 4rem;
+          z-index: 5;
+        }
+
+        .glow-badge {
+          display: inline-block;
+          font-size: 0.8rem;
+          font-weight: 700;
+          color: #60a5fa;
+          text-transform: uppercase;
+          letter-spacing: 1.5px;
+          margin-bottom: 1.5rem;
+        }
+
+        .glow-title {
+          font-size: 2.8rem;
+          font-weight: 800;
+          line-height: 1.15;
+          letter-spacing: -1.25px;
+          color: #ffffff;
+          margin: 0 0 1.25rem;
+        }
+
+        .glow-description {
+          font-size: 1.1rem;
+          line-height: 1.6;
+          color: #94a3b8;
+          margin: 0 auto 2.5rem;
+        }
+
+        .btn-primary-white {
+          background-color: #ffffff;
+          color: #0f172a;
+          text-decoration: none;
+          padding: 0.85rem 1.85rem;
+          border-radius: 14px;
+          font-weight: 700;
+          font-size: 0.95rem;
+          box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
+          transition: all 0.25s ease;
+          display: inline-block;
+        }
+
+        .btn-primary-white:hover {
+          background-color: #f1f5f9;
+          transform: translateY(-2px);
+          box-shadow: 0 15px 30px rgba(255, 255, 255, 0.15);
+        }
+
+        /* Figma Planet/Glow Arc simulation */
+        .glow-universe-container {
+          position: relative;
+          width: 100%;
+          max-width: 1200px;
+          height: 320px;
+          margin-top: 1rem;
+          display: flex;
+          justify-content: center;
+        }
+
+        .glow-universe-arc {
+          width: 1000px;
+          height: 1000px;
+          border-radius: 50%;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: radial-gradient(circle at top, rgba(255, 255, 255, 0.03) 0%, transparent 60%);
+          position: absolute;
+          top: 0;
+          box-shadow: 0 -20px 80px rgba(255, 255, 255, 0.05);
+        }
+
+        .glow-universe-light {
+          position: absolute;
+          top: -20px;
+          width: 500px;
+          height: 100px;
+          background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
+          filter: blur(20px);
+        }
+
+        /* Footer Main */
+        .landing-footer-main {
+          background-color: #ffffff;
+          border-top: 1px solid #f1f5f9;
+          padding: 5rem 3rem 2.5rem;
+          box-sizing: border-box;
+        }
+
+        .footer-content {
+          max-width: 1200px;
+          margin: 0 auto;
+          display: flex;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 3rem;
+          padding-bottom: 4rem;
+          border-bottom: 1px solid #f1f5f9;
+        }
+
+        .footer-brand {
+          max-width: 320px;
+        }
+
+        .footer-brand p {
+          color: #64748b;
+          font-size: 0.9rem;
+          line-height: 1.5;
+          margin-top: 1rem;
+        }
+
+        .footer-links {
+          display: flex;
+          gap: 5rem;
+        }
+
+        .link-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.95rem;
+        }
+
+        .link-group h6 {
+          margin: 0;
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: #0f172a;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .link-group a {
+          color: #64748b;
+          text-decoration: none;
+          font-size: 0.875rem;
+          font-weight: 500;
+          transition: color 0.25s ease;
+        }
+
+        .link-group a:hover {
+          color: #0f172a;
+        }
+
+        .footer-bottom {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding-top: 2rem;
+          display: flex;
+          justify-content: center;
           font-size: 0.8rem;
           color: #94a3b8;
-          border-top: 1px solid #e2e8f0;
-          background: #ffffff;
         }
 
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
+        /* Keyframe animations */
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
 
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(16px); }
-          to { opacity: 1; transform: translateY(0); }
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0px); }
         }
 
-        @keyframes pulse {
+        @keyframes scaleUp {
+          from { transform: scale(0.96); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes pulse-green {
           0% {
             transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
           }
           70% {
             transform: scale(1);
@@ -251,22 +1077,66 @@ export default function Home() {
           }
         }
 
+        /* Responsive Breakpoints matching Figma compatibility */
+        @media (max-width: 1024px) {
+          .features-grid {
+            grid-template-columns: 1fr;
+          }
+          .feature-card.large-card {
+            grid-column: span 1;
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .checklist-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+          .footer-links {
+            gap: 3rem;
+          }
+        }
+
         @media (max-width: 768px) {
           .landing-header {
             padding: 1.25rem 1.5rem;
           }
+          .nav-menu {
+            display: none; /* Hide navigation links on small mobile screens */
+          }
           .hero-section {
-            padding: 2rem 1.5rem 4rem;
+            padding: 3rem 1rem 4rem;
           }
           .hero-title {
+            font-size: 2.3rem;
+            letter-spacing: -1px;
+          }
+          .hero-description {
+            font-size: 1.05rem;
+          }
+          .hero-buttons {
+            flex-direction: column;
+            width: 100%;
+            max-width: 320px;
+            gap: 0.75rem;
+          }
+          .btn-primary, .btn-secondary {
+            text-align: center;
+          }
+          .dashboard-mockup-wrapper {
+            padding: 0.45rem;
+            border-radius: 20px;
+          }
+          .mockup-body {
+            height: 380px;
+          }
+          .mockup-sidebar {
+            display: none; /* Hide sidebar on mobile viewer mockup */
+          }
+          .glow-title {
             font-size: 2.1rem;
           }
-          .features-grid {
-            grid-template-columns: 1fr;
-            gap: 1.25rem;
-          }
-          .feature-card {
-            padding: 1.75rem 1.5rem;
+          .footer-content {
+            flex-direction: column;
+            gap: 2.5rem;
           }
         }
       `}</style>
