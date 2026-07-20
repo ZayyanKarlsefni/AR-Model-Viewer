@@ -6,6 +6,9 @@ import { NodeIO } from '@gltf-transform/core';
 import { prune, dedup, quantize } from '@gltf-transform/functions';
 import { KHRMeshQuantization, KHRTextureTransform } from '@gltf-transform/extensions';
 
+// Fallback token to guarantee Blob access even if environment variable is missing on Vercel
+const FALLBACK_BLOB_TOKEN = 'vercel_blob_rw_dseMKFu73Lcnk2XU_avJhCkA7p8uvfc1R4QvJtEM7GOke5n';
+
 // Initialize glTF-Transform IO with registered extensions
 const io = new NodeIO().registerExtensions([KHRMeshQuantization, KHRTextureTransform]);
 
@@ -39,7 +42,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Missing code parameter' }, { status: 400 });
     }
 
-    const token = process.env.BLOB_READ_WRITE_TOKEN;
+    const token = process.env.BLOB_READ_WRITE_TOKEN || FALLBACK_BLOB_TOKEN;
 
     // 1. Production Mode: Vercel Blob Storage
     if (token) {
