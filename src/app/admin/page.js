@@ -9,7 +9,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const DEFAULT_PIN = '1234';
+  const DEFAULT_PIN = '@Maulana275';
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -77,7 +77,7 @@ export default function AdminPage() {
           <form onSubmit={handleLogin} className="login-form">
             <input
               type="password"
-              placeholder="PIN Rahasia (Default: 1234)"
+              placeholder="Masukkan Password Rahasia"
               value={pin}
               onChange={(e) => setPin(e.target.value)}
               className="login-input"
