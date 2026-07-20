@@ -33,6 +33,13 @@ function ViewerContent() {
       .then((data) => {
         setModelUrl(data.url);
         setLoading(false);
+
+        // Record client visit log
+        fetch('/api/admin/visits', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code })
+        }).catch(() => {});
       })
       .catch((err) => {
         setError(err.message);

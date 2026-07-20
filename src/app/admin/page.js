@@ -6,10 +6,9 @@ export default function AdminPage() {
   const [pin, setPin] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [models, setModels] = useState([]);
+  const [visits, setVisits] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-
-  const DEFAULT_PIN = '@Maulana275';
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -17,6 +16,7 @@ export default function AdminPage() {
     if (cleanPin === '@maulana275' || cleanPin === 'maulana275') {
       setIsAuthenticated(true);
       fetchModels();
+      fetchVisits();
     } else {
       alert('Password Salah! Silakan coba lagi.');
     }
@@ -36,6 +36,18 @@ export default function AdminPage() {
       setMessage('Error server: ' + err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchVisits = async () => {
+    try {
+      const res = await fetch('/api/admin/visits');
+      const data = await res.json();
+      if (res.ok) {
+        setVisits(data.visits || []);
+      }
+    } catch (e) {
+      console.error('Error fetching visits:', e);
     }
   };
 
@@ -177,7 +189,7 @@ export default function AdminPage() {
       <section className="models-section">
         <div className="section-header">
           <h2>Daftar Model Aktif</h2>
-          <button onClick={fetchModels} className="refresh-btn">🔄 Refresh Data</button>
+          <button onClick={() => { fetchModels(); fetchVisits(); }} className="refresh-btn">🔄 Refresh Data</button>
         </div>
 
         {loading && <p className="status-text">Memuat daftar model...</p>}
@@ -215,6 +227,51 @@ export default function AdminPage() {
                       <button onClick={() => handleDelete(m.url, m.code)} className="action-btn delete-btn">
                         Hapus
                       </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      {/* Client Access Logs Table */}
+      <section className="models-section visits-section">
+        <div className="section-header">
+          <h2>Riwayat Akses Klien (Visitors Log)</h2>
+          <span className="log-count-badge">{visits.length} Akses Terbaru</span>
+        </div>
+
+        {visits.length === 0 ? (
+          <div className="empty-box">
+            <p>Belum ada riwayat pengaksesan dari klien.</p>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+            <table className="models-table">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>ID Model</th>
+                  <th>Waktu Akses</th>
+                  <th>Perangkat / HP</th>
+                  <th>Status AR</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visits.map((v, idx) => (
+                  <tr key={idx}>
+                    <td>{idx + 1}</td>
+                    <td className="code-cell">{v.code ? v.code.substring(0, 12) + '...' : 'Unknown'}</td>
+                    <td className="date-cell">{new Date(v.timestamp).toLocaleString('id-ID')}</td>
+                    <td><span className="device-badge">{v.device}</span></td>
+                    <td>
+                      {v.isAr ? (
+                        <span className="ar-badge active">AR Opened</span>
+                      ) : (
+                        <span className="ar-badge">3D View</span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -310,6 +367,7 @@ export default function AdminPage() {
           border-radius: 24px;
           padding: 2rem;
           box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.04);
+          margin-bottom: 2rem;
         }
 
         .section-header {
@@ -324,6 +382,16 @@ export default function AdminPage() {
           font-size: 1.25rem;
           font-weight: 800;
           color: #0f172a;
+        }
+
+        .log-count-badge {
+          font-size: 0.75rem;
+          font-weight: 700;
+          background: #f1f5f9;
+          color: #475569;
+          padding: 0.35rem 0.75rem;
+          border-radius: 9999px;
+          border: 1px solid #e2e8f0;
         }
 
         .refresh-btn {
@@ -369,6 +437,31 @@ export default function AdminPage() {
         .date-cell {
           color: #64748b;
           font-size: 0.8rem;
+        }
+
+        .device-badge {
+          font-size: 0.75rem;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          padding: 0.25rem 0.6rem;
+          border-radius: 6px;
+          color: #0f172a;
+          font-weight: 600;
+        }
+
+        .ar-badge {
+          font-size: 0.75rem;
+          color: #64748b;
+          background: #f1f5f9;
+          padding: 0.25rem 0.6rem;
+          border-radius: 6px;
+          font-weight: 600;
+        }
+
+        .ar-badge.active {
+          background: #d1fae5;
+          color: #065f46;
+          border: 1px solid #a7f3d0;
         }
 
         .actions-cell {
