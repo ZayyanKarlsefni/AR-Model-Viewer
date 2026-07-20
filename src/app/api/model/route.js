@@ -6,6 +6,9 @@ import { NodeIO } from '@gltf-transform/core';
 import { prune, dedup, quantize } from '@gltf-transform/functions';
 import { KHRMeshQuantization, KHRTextureTransform } from '@gltf-transform/extensions';
 
+// Force Next.js App Router to execute this API route dynamically on every request (prevents stale static caching)
+export const dynamic = 'force-dynamic';
+
 // Fallback token to guarantee Blob access even if environment variable is missing on Vercel
 const FALLBACK_BLOB_TOKEN = 'vercel_blob_rw_dseMKFu73Lcnk2XU_avJhCkA7p8uvfc1R4QvJtEM7GOke5n';
 
@@ -42,7 +45,6 @@ export async function GET(request) {
 
     // 1. Production Mode: Vercel Blob Storage
     if (token) {
-      // List all model blobs under models/ prefix
       const { blobs } = await list({ 
         prefix: 'models/',
         token: token
@@ -56,7 +58,9 @@ export async function GET(request) {
           // Check if a compressed version exists
           const compressedBlob = matchingBlobs.find(b => b.pathname.includes('_compressed'));
           if (compressedBlob) {
-            return NextResponse.json({ url: compressedBlob.url });
+            return NextResponse.json({ url: compressedBlob.url }, {
+              headers: { 'Cache-Control': 'no-store, max-age=0' }
+            });
           }
 
           // If only the original uncompressed model exists
@@ -89,10 +93,14 @@ export async function GET(request) {
               }
 
               console.log(`[Compression] Completed for ${cleanCode}. Savings: ${((1 - compressedBuffer.byteLength / arrayBuffer.byteLength) * 100).toFixed(2)}%`);
-              return NextResponse.json({ url: newBlob.url });
+              return NextResponse.json({ url: newBlob.url }, {
+                headers: { 'Cache-Control': 'no-store, max-age=0' }
+              });
             } catch (compressErr) {
               console.error('[Compression] Optimization failed, fallback to original model:', compressErr);
-              return NextResponse.json({ url: originalBlob.url });
+              return NextResponse.json({ url: originalBlob.url }, {
+                headers: { 'Cache-Control': 'no-store, max-age=0' }
+              });
             }
           }
         }
@@ -105,13 +113,21 @@ export async function GET(request) {
       const files = fs.readdirSync(uploadsDir);
       const matchingFile = files.find(f => f.toLowerCase().includes(cleanCode));
       if (matchingFile) {
-        return NextResponse.json({ url: `/uploads/${matchingFile}` });
+        return NextResponse.json({ url: `/uploads/${matchingFile}` }, {
+          headers: { 'Cache-Control': 'no-store, max-age=0' }
+        });
       }
     }
 
-    return NextResponse.json({ error: 'Model not found' }, { status: 404 });
+    return NextResponse.json({ error: 'Model not found' }, { 
+      status: 404,
+      headers: { 'Cache-Control': 'no-store, max-age=0' }
+    });
   } catch (error) {
     console.error('Error fetching model:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { 
+      status: 500,
+      headers: { 'Cache-Control': 'no-store, max-age=0' }
+    });
   }
 }
