@@ -14,7 +14,19 @@ function ViewerContent() {
   // States for Exploded View
   const [hasAnimation, setHasAnimation] = useState(false);
   const [sliderValue, setSliderValue] = useState(0);
+
+  // States for Presentation Mode (Cinematic Showcase)
+  const [isPresenting, setIsPresenting] = useState(false);
+  const presentationIntervalRef = useRef(null);
+  const currentAngleIndexRef = useRef(0);
   const viewerRef = useRef(null);
+
+  const cinematicAngles = [
+    '45deg 55deg 105%',  // Isometric Overview
+    '135deg 75deg 75%',  // Close-up Component Detail
+    '225deg 85deg 110%', // Side Low-angle Elevation
+    '315deg 45deg 95%'   // High Top-Down Angle
+  ];
 
   useEffect(() => {
     if (!code) {
@@ -53,7 +65,6 @@ function ViewerContent() {
     if (!mv) return;
 
     const onLoad = () => {
-      // If there are animations inside the GLB, pause auto-play and enable slider
       if (mv.availableAnimations && mv.availableAnimations.length > 0) {
         setHasAnimation(true);
         setSliderValue(0);
@@ -68,6 +79,64 @@ function ViewerContent() {
       mv.removeEventListener('load', onLoad);
     };
   }, [modelUrl]);
+
+  // Handle user manual interaction to pause Presentation Mode
+  useEffect(() => {
+    const mv = viewerRef.current;
+    if (!mv) return;
+
+    const onUserInteraction = () => {
+      if (isPresenting) {
+        stopPresentation();
+      }
+    };
+
+    mv.addEventListener('user-interaction', onUserInteraction);
+    return () => {
+      mv.removeEventListener('user-interaction', onUserInteraction);
+    };
+  }, [isPresenting]);
+
+  // Cleanup presentation interval on unmount
+  useEffect(() => {
+    return () => {
+      if (presentationIntervalRef.current) {
+        clearInterval(presentationIntervalRef.current);
+      }
+    };
+  }, []);
+
+  const startPresentation = () => {
+    const mv = viewerRef.current;
+    if (!mv) return;
+
+    setIsPresenting(true);
+    currentAngleIndexRef.current = 0;
+    mv.cameraOrbit = cinematicAngles[0];
+
+    presentationIntervalRef.current = setInterval(() => {
+      currentAngleIndexRef.current = (currentAngleIndexRef.current + 1) % cinematicAngles.length;
+      if (viewerRef.current) {
+        viewerRef.current.cameraOrbit = cinematicAngles[currentAngleIndexRef.current];
+      }
+    }, 5000);
+  };
+
+  const stopPresentation = () => {
+    setIsPresenting(false);
+    if (presentationIntervalRef.current) {
+      clearInterval(presentationIntervalRef.current);
+      presentationIntervalRef.current = null;
+    }
+  };
+
+  const togglePresentation = () => {
+    if (isPresenting) {
+      stopPresentation();
+    } else {
+      startPresentation();
+    }
+  };
 
   // Control animation time based on slider input
   const handleSliderChange = (e) => {
@@ -90,7 +159,18 @@ function ViewerContent() {
 
       <header className="viewer-header">
         <h1 className="logo-text">AR Model <span>Lite</span></h1>
-        {code && <span className="model-id">ID: {code.substring(0, 8)}</span>}
+        
+        <div className="header-actions">
+          {!loading && !error && modelUrl && (
+            <button
+              onClick={togglePresentation}
+              className={`present-btn ${isPresenting ? 'active' : ''}`}
+            >
+              {isPresenting ? 'HENTIKAN PRESENTASI' : 'PRESENTASI SINEMATIK'}
+            </button>
+          )}
+          {code && <span className="model-id">ID: {code.substring(0, 8)}</span>}
+        </div>
       </header>
 
       <section className="viewer-content">
@@ -111,6 +191,13 @@ function ViewerContent() {
 
         {!loading && !error && modelUrl && (
           <div className="model-viewer-wrapper">
+            {/* Presentation Active Badge */}
+            {isPresenting && (
+              <div className="presentation-badge">
+                <span className="rec-dot"></span> PRESENTASI SINEMATIK AKTIF
+              </div>
+            )}
+
             <model-viewer
               ref={viewerRef}
               src={modelUrl}
@@ -120,7 +207,9 @@ function ViewerContent() {
               poster="/poster.webp"
               shadow-intensity="1.5"
               shadow-softness="0.8"
-              auto-rotate={!hasAnimation} // Auto-rotate only if there is no exploded animation
+              auto-rotate={isPresenting || !hasAnimation}
+              rotation-per-second={isPresenting ? "12deg" : "30deg"}
+              interpolation-decay="200"
               className="custom-viewer"
             >
               <button slot="ar-button" id="ar-button">
@@ -204,6 +293,37 @@ function ViewerContent() {
         .logo-text span {
           font-weight: 300;
           color: #64748b;
+        }
+
+        .header-actions {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .present-btn {
+          background: #ffffff;
+          border: 1px solid #0f172a;
+          color: #0f172a;
+          padding: 0.45rem 1rem;
+          border-radius: 10px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .present-btn:hover {
+          background: #0f172a;
+          color: #ffffff;
+        }
+
+        .present-btn.active {
+          background: #0f172a;
+          color: #ffffff;
+          border-color: #0f172a;
+          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
         }
 
         .model-id {
@@ -307,6 +427,42 @@ function ViewerContent() {
           --poster-color: transparent;
         }
 
+        /* Presentation Active Badge Overlay */
+        .presentation-badge {
+          position: absolute;
+          top: 1rem;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(15, 23, 42, 0.85);
+          backdrop-filter: blur(12px);
+          color: #ffffff;
+          padding: 0.45rem 1rem;
+          border-radius: 9999px;
+          font-size: 0.7rem;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          z-index: 25;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .rec-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #ef4444;
+          animation: pulseDot 1.5s infinite;
+        }
+
+        @keyframes pulseDot {
+          0% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(0.8); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+
         /* AR Button - Ultra Clean Dark Slate Button */
         #ar-button {
           position: absolute;
@@ -406,7 +562,7 @@ function ViewerContent() {
         #ar-prompt {
           position: absolute;
           left: 50%;
-          bottom: 9rem; /* Adjusted up so it sits above the slider */
+          bottom: 9rem;
           transform: translateX(-50%);
           display: none;
           pointer-events: none;
@@ -464,8 +620,12 @@ function ViewerContent() {
         /* Responsive Design - Mobile Optimized */
         @media (max-width: 640px) {
           .viewer-header {
-            padding: 0 1.25rem;
+            padding: 0 1rem;
             height: 56px;
+          }
+          .present-btn {
+            padding: 0.35rem 0.65rem;
+            font-size: 0.675rem;
           }
           #ar-button {
             bottom: 1.25rem;
@@ -483,7 +643,7 @@ function ViewerContent() {
             border-radius: 16px;
           }
           .viewer-content {
-            padding: 1rem;
+            padding: 0.75rem;
           }
           .viewer-footer {
             height: 40px;
