@@ -49,19 +49,19 @@ export async function GET(request) {
       });
       
       if (blobs && blobs.length > 0) {
-        // Check if the compressed version already exists
-        const compressedBlob = blobs.find(b => b.pathname.endsWith('_compressed.glb'));
+        // Check if a compressed version exists (handles random Vercel Blob suffixes)
+        const compressedBlob = blobs.find(b => b.pathname.includes('_compressed'));
         if (compressedBlob) {
           return NextResponse.json({ url: compressedBlob.url });
         }
 
-        // If only the original exists, compress it on-the-fly
-        const originalBlob = blobs.find(b => b.pathname.endsWith(`${code}.glb`));
+        // If only the original uncompressed model exists, compress it on-the-fly
+        const originalBlob = blobs.find(b => !b.pathname.includes('_compressed'));
         if (originalBlob) {
           console.log(`[Compression] Starting on-the-fly optimization for model: ${code}`);
           
           try {
-            // Download the original GLB from Vercel Blob
+            // Download original GLB from Vercel Blob
             const fileResponse = await fetch(originalBlob.url);
             if (!fileResponse.ok) {
               throw new Error('Failed to download original model from Vercel Blob');
@@ -79,7 +79,11 @@ export async function GET(request) {
             });
 
             // Delete original model to save storage space
-            await del(originalBlob.url, { token: token });
+            try {
+              await del(originalBlob.url, { token: token });
+            } catch (delErr) {
+              console.error('[Compression] Warning: could not delete original blob:', delErr);
+            }
 
             console.log(`[Compression] Completed for ${code}. New size: ${(compressedBuffer.byteLength / 1024).toFixed(2)} KB. Savings: ${((1 - compressedBuffer.byteLength / arrayBuffer.byteLength) * 100).toFixed(2)}%`);
             return NextResponse.json({ url: newBlob.url });
@@ -106,7 +110,6 @@ export async function GET(request) {
         
         fs.writeFileSync(localCompressedPath, Buffer.from(compressedBuffer));
         
-        // Remove original file
         try {
           fs.unlinkSync(localPath);
         } catch (e) {
