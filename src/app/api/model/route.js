@@ -14,10 +14,7 @@ const io = new NodeIO().registerExtensions([KHRMeshQuantization, KHRTextureTrans
 
 // Helper function to compress GLB file buffer
 async function compressGlb(buffer) {
-  // Read GLB file
   const doc = await io.readBinary(new Uint8Array(buffer));
-  
-  // Apply optimizations
   await doc.transform(
     prune(),
     dedup(),
@@ -28,8 +25,6 @@ async function compressGlb(buffer) {
       quantizeColor: 8
     })
   );
-  
-  // Write back compressed GLB
   return await io.writeBinary(doc);
 }
 
@@ -42,87 +37,75 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Missing code parameter' }, { status: 400 });
     }
 
+    const cleanCode = code.trim().toLowerCase();
     const token = process.env.BLOB_READ_WRITE_TOKEN || FALLBACK_BLOB_TOKEN;
 
     // 1. Production Mode: Vercel Blob Storage
     if (token) {
+      // List all model blobs under models/ prefix
       const { blobs } = await list({ 
-        prefix: `models/${code}`,
+        prefix: 'models/',
         token: token
       });
       
       if (blobs && blobs.length > 0) {
-        // Check if a compressed version exists (handles random Vercel Blob suffixes)
-        const compressedBlob = blobs.find(b => b.pathname.includes('_compressed'));
-        if (compressedBlob) {
-          return NextResponse.json({ url: compressedBlob.url });
-        }
+        // Filter blobs that match the code (supports full GUID or 8-char short ID)
+        const matchingBlobs = blobs.filter(b => b.pathname.toLowerCase().includes(cleanCode));
+        
+        if (matchingBlobs.length > 0) {
+          // Check if a compressed version exists
+          const compressedBlob = matchingBlobs.find(b => b.pathname.includes('_compressed'));
+          if (compressedBlob) {
+            return NextResponse.json({ url: compressedBlob.url });
+          }
 
-        // If only the original uncompressed model exists, compress it on-the-fly
-        const originalBlob = blobs.find(b => !b.pathname.includes('_compressed'));
-        if (originalBlob) {
-          console.log(`[Compression] Starting on-the-fly optimization for model: ${code}`);
-          
-          try {
-            // Download original GLB from Vercel Blob
-            const fileResponse = await fetch(originalBlob.url);
-            if (!fileResponse.ok) {
-              throw new Error('Failed to download original model from Vercel Blob');
-            }
-            const arrayBuffer = await fileResponse.arrayBuffer();
-
-            // Compress the model
-            const compressedBuffer = await compressGlb(arrayBuffer);
-
-            // Upload compressed model
-            const newBlob = await put(`models/${code}_compressed.glb`, Buffer.from(compressedBuffer), {
-              access: 'public',
-              addRandomSuffix: false,
-              token: token
-            });
-
-            // Delete original model to save storage space
+          // If only the original uncompressed model exists
+          const originalBlob = matchingBlobs.find(b => !b.pathname.includes('_compressed'));
+          if (originalBlob) {
+            console.log(`[Compression] Starting on-the-fly optimization for model: ${cleanCode}`);
+            
             try {
-              await del(originalBlob.url, { token: token });
-            } catch (delErr) {
-              console.error('[Compression] Warning: could not delete original blob:', delErr);
-            }
+              const fileResponse = await fetch(originalBlob.url);
+              if (!fileResponse.ok) {
+                throw new Error('Failed to download original model from Vercel Blob');
+              }
+              const arrayBuffer = await fileResponse.arrayBuffer();
 
-            console.log(`[Compression] Completed for ${code}. New size: ${(compressedBuffer.byteLength / 1024).toFixed(2)} KB. Savings: ${((1 - compressedBuffer.byteLength / arrayBuffer.byteLength) * 100).toFixed(2)}%`);
-            return NextResponse.json({ url: newBlob.url });
-          } catch (compressErr) {
-            console.error('[Compression] Optimization failed, fallback to original model:', compressErr);
-            return NextResponse.json({ url: originalBlob.url });
+              // Compress the model
+              const compressedBuffer = await compressGlb(arrayBuffer);
+
+              // Upload compressed model
+              const newBlob = await put(`models/${cleanCode}_compressed.glb`, Buffer.from(compressedBuffer), {
+                access: 'public',
+                addRandomSuffix: false,
+                token: token
+              });
+
+              // Delete original model to save storage space
+              try {
+                await del(originalBlob.url, { token: token });
+              } catch (delErr) {
+                console.error('[Compression] Warning: could not delete original blob:', delErr);
+              }
+
+              console.log(`[Compression] Completed for ${cleanCode}. Savings: ${((1 - compressedBuffer.byteLength / arrayBuffer.byteLength) * 100).toFixed(2)}%`);
+              return NextResponse.json({ url: newBlob.url });
+            } catch (compressErr) {
+              console.error('[Compression] Optimization failed, fallback to original model:', compressErr);
+              return NextResponse.json({ url: originalBlob.url });
+            }
           }
         }
       }
     }
 
     // 2. Development Mode: Local Filesystem Fallback
-    const localCompressedPath = path.join(process.cwd(), 'public', 'uploads', `${code}_compressed.glb`);
-    if (fs.existsSync(localCompressedPath)) {
-      return NextResponse.json({ url: `/uploads/${code}_compressed.glb` });
-    }
-
-    const localPath = path.join(process.cwd(), 'public', 'uploads', `${code}.glb`);
-    if (fs.existsSync(localPath)) {
-      try {
-        console.log(`[Local Compression] Quantizing model locally: ${code}`);
-        const fileData = fs.readFileSync(localPath);
-        const compressedBuffer = await compressGlb(fileData.buffer);
-        
-        fs.writeFileSync(localCompressedPath, Buffer.from(compressedBuffer));
-        
-        try {
-          fs.unlinkSync(localPath);
-        } catch (e) {
-          // ignore error if unlink fails
-        }
-        
-        return NextResponse.json({ url: `/uploads/${code}_compressed.glb` });
-      } catch (localCompressErr) {
-        console.error('[Local Compression] Failed, fallback to original:', localCompressErr);
-        return NextResponse.json({ url: `/uploads/${code}.glb` });
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+    if (fs.existsSync(uploadsDir)) {
+      const files = fs.readdirSync(uploadsDir);
+      const matchingFile = files.find(f => f.toLowerCase().includes(cleanCode));
+      if (matchingFile) {
+        return NextResponse.json({ url: `/uploads/${matchingFile}` });
       }
     }
 
