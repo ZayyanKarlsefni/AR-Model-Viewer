@@ -13,11 +13,12 @@ export default function AdminPage() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (pin === DEFAULT_PIN) {
+    const cleanPin = pin.trim().toLowerCase();
+    if (cleanPin === '@maulana275' || cleanPin === 'maulana275') {
       setIsAuthenticated(true);
       fetchModels();
     } else {
-      alert('PIN Salah! Silakan coba lagi.');
+      alert('Password Salah! Silakan coba lagi.');
     }
   };
 
