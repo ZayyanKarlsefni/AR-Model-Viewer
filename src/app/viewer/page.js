@@ -202,6 +202,7 @@ function ViewerContent() {
               ref={viewerRef}
               src={modelUrl}
               ar
+              ar-scale="fixed"
               ar-modes="webxr scene-viewer quick-look"
               camera-controls
               poster="/poster.webp"
