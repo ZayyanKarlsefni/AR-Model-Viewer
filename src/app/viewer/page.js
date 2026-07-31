@@ -11,7 +11,7 @@ function ViewerContent() {
   const [modelUrl, setModelUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState('cad'); // 'cad' for CAD Workbench UI, 'ar' for Model-Viewer AR
+  const [viewMode, setViewMode] = useState('ar'); // Default to 3D/WebAR mode so clients immediately see 3D model
   const [isLocalHost, setIsLocalHost] = useState(false);
 
   // States for Exploded View
@@ -35,8 +35,11 @@ function ViewerContent() {
     if (typeof window !== 'undefined') {
       const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       setIsLocalHost(isLocal);
+      if (isLocal && file) {
+        setViewMode('cad');
+      }
     }
-  }, []);
+  }, [file]);
 
   useEffect(() => {
     if (file) {
@@ -118,14 +121,14 @@ function ViewerContent() {
     }
   };
 
-  // Determine CAD Workbench Viewer iframe URL (Local vs Cloud Hosted CAD Viewer)
+  // Determine CAD Workbench Viewer iframe URL (Localhost vs External Demo)
   let cadViewerIframeUrl = '';
   if (file) {
     cadViewerIframeUrl = `http://127.0.0.1:5173/?dir=D:\\Plugin\\Text-To-CAD\\models&file=${file}`;
   } else if (modelUrl) {
     if (isLocalHost) {
       const fullOriginUrl = modelUrl.startsWith('http') ? modelUrl : `${window.location.origin}${modelUrl}`;
-      cadViewerIframeUrl = `http://127.0.0.1:5173/?url=${encodeURIComponent(fullOriginUrl)}`;
+      cadViewerIframeUrl = `http://127.0.0.1:5173/?file=${encodeURIComponent(fullOriginUrl)}`;
     } else {
       const fullOriginUrl = modelUrl.startsWith('http') ? modelUrl : `${typeof window !== 'undefined' ? window.location.origin : ''}${modelUrl}`;
       cadViewerIframeUrl = `https://demo.cadskills.xyz/?url=${encodeURIComponent(fullOriginUrl)}`;
@@ -145,21 +148,23 @@ function ViewerContent() {
         
         <div className="view-mode-toggle">
           <button
-            className={`mode-btn ${viewMode === 'cad' ? 'active' : ''}`}
-            onClick={() => setViewMode('cad')}
-          >
-            📊 CAD Workbench (Tree & Inspection)
-          </button>
-          <button
             className={`mode-btn ${viewMode === 'ar' ? 'active' : ''}`}
             onClick={() => setViewMode('ar')}
           >
-            📱 3D & WebAR Viewer (Mobile)
+            📱 3D & WebAR Viewer (Instan)
           </button>
+          {isLocalHost && (
+            <button
+              className={`mode-btn ${viewMode === 'cad' ? 'active' : ''}`}
+              onClick={() => setViewMode('cad')}
+            >
+              📊 CAD Workbench (Local Desktop)
+            </button>
+          )}
         </div>
 
         <div className="header-actions">
-          {!loading && !error && modelUrl && viewMode === 'ar' && (
+          {!loading && !error && modelUrl && (
             <button
               onClick={togglePresentation}
               className={`present-btn ${isPresenting ? 'active' : ''}`}
@@ -189,18 +194,7 @@ function ViewerContent() {
 
         {!loading && !error && (
           <>
-            {/* 1. CAD WORKBENCH VIEW (Full Assembly Tree, Display, Appearance, Surface Colors, Orbit Gizmo) */}
-            {viewMode === 'cad' && (
-              <div className="cad-workbench-wrapper">
-                <iframe
-                  src={cadViewerIframeUrl}
-                  className="cad-workbench-iframe"
-                  title="CAD Workbench 3D Inspection"
-                />
-              </div>
-            )}
-
-            {/* 2. WEBAR & 3D CLOUD VIEW (Mobile Optimized AR Mode) */}
+            {/* 1. 3D & WEBAR VIEWER (Mode Utama: Langsung Tampil 3D + Siap AR di HP) */}
             {viewMode === 'ar' && modelUrl && (
               <div className="model-viewer-wrapper">
                 {isPresenting && (
@@ -247,6 +241,17 @@ function ViewerContent() {
                     />
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* 2. CAD WORKBENCH VIEW (Local Host Desktop Mode) */}
+            {viewMode === 'cad' && isLocalHost && (
+              <div className="cad-workbench-wrapper">
+                <iframe
+                  src={cadViewerIframeUrl}
+                  className="cad-workbench-iframe"
+                  title="CAD Workbench 3D Inspection"
+                />
               </div>
             )}
           </>
