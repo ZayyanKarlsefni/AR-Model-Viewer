@@ -9,9 +9,10 @@ function ViewerContent() {
   const code = searchParams.get('code');
   const file = searchParams.get('file');
   const [modelUrl, setModelUrl] = useState(null);
+  const [targetFileRef, setTargetFileRef] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState('cad'); // Default to full CAD Workbench
+  const [viewMode, setViewMode] = useState('cad');
   const [isLocalHost, setIsLocalHost] = useState(false);
 
   useEffect(() => {
@@ -23,8 +24,8 @@ function ViewerContent() {
 
   useEffect(() => {
     if (file) {
-      const fullPath = file.startsWith('http') ? file : `http://127.0.0.1:5173/?dir=D:\\Plugin\\Text-To-CAD\\models&file=${file}`;
-      setModelUrl(fullPath);
+      setTargetFileRef(file);
+      setModelUrl(file);
       setLoading(false);
       return;
     }
@@ -44,9 +45,12 @@ function ViewerContent() {
       })
       .then((data) => {
         setModelUrl(data.url);
+        // If data.key is returned (e.g. models/xyz.step), use it directly
+        const fileRef = data.key || `models/${code}.step`;
+        setTargetFileRef(fileRef);
         setLoading(false);
 
-        // Record client visit log
+        // Record visit
         fetch('/api/admin/visits', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -59,16 +63,12 @@ function ViewerContent() {
       });
   }, [code, file]);
 
-  // Determine native built-in CAD Workbench Viewer iframe URL (Same-Origin Native App)
+  // Construct iframe URL for CAD Workbench
   let cadViewerIframeUrl = '';
-  if (file) {
-    cadViewerIframeUrl = `/cad-viewer/index.html?file=${encodeURIComponent(file)}`;
+  if (targetFileRef) {
+    cadViewerIframeUrl = `/cad-viewer/index.html?file=${encodeURIComponent(targetFileRef)}`;
   } else if (code) {
-    // Use relative path — CAD viewer resolves it against its own origin
-    // Do NOT encodeURIComponent the full URL as viewer decodes ?file= as a direct fetch URL
-    cadViewerIframeUrl = `/cad-viewer/index.html?file=${encodeURIComponent('/api/model-file?code=' + code)}`;
-  } else if (modelUrl) {
-    cadViewerIframeUrl = `/cad-viewer/index.html?file=${encodeURIComponent(modelUrl)}`;
+    cadViewerIframeUrl = `/cad-viewer/index.html?file=${encodeURIComponent(`models/${code}.step`)}`;
   }
 
   return (
@@ -121,7 +121,7 @@ function ViewerContent() {
 
         {!loading && !error && (
           <>
-            {/* 1. NATIVE BUNDLED FULL CAD WORKBENCH (Matches Exact Reference Screenshots) */}
+            {/* 1. NATIVE BUNDLED FULL CAD WORKBENCH */}
             {viewMode === 'cad' && (
               <div className="cad-workbench-wrapper">
                 <iframe
@@ -132,7 +132,7 @@ function ViewerContent() {
               </div>
             )}
 
-            {/* 2. WEBAR & 3D CLOUD VIEW (Mobile 1-Tap AR Mode) */}
+            {/* 2. WEBAR & 3D CLOUD VIEW */}
             {viewMode === 'ar' && modelUrl && (
               <div className="model-viewer-wrapper">
                 <model-viewer
