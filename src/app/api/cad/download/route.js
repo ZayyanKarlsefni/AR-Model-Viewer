@@ -61,7 +61,7 @@ export async function GET(request) {
               status: 200,
               headers: {
                 'Content-Type': contentType,
-                'Content-Disposition': `attachment; filename="${fileName}"`,
+                'Content-Disposition': `inline; filename="${fileName}"`,
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, OPTIONS',
                 'Cache-Control': 'public, max-age=3600'
@@ -101,7 +101,7 @@ export async function GET(request) {
               status: 200,
               headers: {
                 'Content-Type': contentType,
-                'Content-Disposition': `attachment; filename="${fileName}"`,
+                'Content-Disposition': `inline; filename="${fileName}"`,
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, OPTIONS',
                 'Cache-Control': 'public, max-age=3600'
@@ -134,7 +134,7 @@ export async function GET(request) {
             status: 200,
             headers: {
               'Content-Type': isStep ? 'application/x-step' : 'model/gltf-binary',
-              'Content-Disposition': `attachment; filename="${fileName}"`,
+              'Content-Disposition': `inline; filename="${fileName}"`,
               'Access-Control-Allow-Origin': '*',
               'Access-Control-Allow-Methods': 'GET, OPTIONS',
               'Cache-Control': 'public, max-age=3600'
@@ -158,7 +158,7 @@ export async function GET(request) {
           status: 200,
           headers: {
             'Content-Type': isStep ? 'application/x-step' : 'model/gltf-binary',
-            'Content-Disposition': `attachment; filename="${matchingFile}"`,
+            'Content-Disposition': `inline; filename="${matchingFile}"`,
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, OPTIONS',
             'Cache-Control': 'public, max-age=3600'
