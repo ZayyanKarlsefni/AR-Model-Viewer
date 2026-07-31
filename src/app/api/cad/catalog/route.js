@@ -46,6 +46,7 @@ export async function GET(request) {
             const stem = item.Key.substring(0, item.Key.length - ext.length);
             const downloadPath = `/api/cad/download?file=${encodeURIComponent(item.Key)}`;
             const fullDownloadUrl = `${originUrl}${downloadPath}`;
+            const itemHash = item.ETag ? item.ETag.replace(/"/g, '') : item.Key;
 
             if (ext === '.step' || ext === '.stp') {
               const matchingGlbKey = keys.find(k => k.toLowerCase() === `${stem.toLowerCase()}.glb`);
@@ -58,6 +59,7 @@ export async function GET(request) {
                 name: fileName,
                 sourceKind: 'step',
                 kind: 'step',
+                hash: itemHash,
                 stepFile: item.Key,
                 assetFile: matchingGlbKey || item.Key,
                 glbUrl: glbDownloadUrl,
@@ -69,7 +71,6 @@ export async function GET(request) {
                 lastModified: item.LastModified
               });
             } else if (ext === '.glb') {
-              // If there's no matching .step file uploaded, treat as secure GLB-only model
               const matchingStepKey = keys.find(k => k.toLowerCase() === `${stem.toLowerCase()}.step` || k.toLowerCase() === `${stem.toLowerCase()}.stp`);
               
               entries.push({
@@ -77,6 +78,7 @@ export async function GET(request) {
                 name: fileName,
                 sourceKind: matchingStepKey ? 'step' : 'glb',
                 kind: matchingStepKey ? 'step' : 'glb',
+                hash: itemHash,
                 assetFile: item.Key,
                 url: fullDownloadUrl,
                 outputUrl: fullDownloadUrl,
@@ -110,6 +112,7 @@ export async function GET(request) {
               const stem = b.pathname.substring(0, b.pathname.length - ext.length);
               const downloadPath = `/api/cad/download?file=${encodeURIComponent(b.pathname)}`;
               const fullDownloadUrl = `${originUrl}${downloadPath}`;
+              const blobHash = b.url || b.pathname;
 
               if (ext === '.step' || ext === '.stp') {
                 const matchingGlb = pathnames.find(p => p.toLowerCase() === `${stem.toLowerCase()}.glb`);
@@ -122,6 +125,7 @@ export async function GET(request) {
                   name: fileName,
                   sourceKind: 'step',
                   kind: 'step',
+                  hash: blobHash,
                   stepFile: b.pathname,
                   assetFile: matchingGlb || b.pathname,
                   glbUrl: glbDownloadUrl,
@@ -138,6 +142,7 @@ export async function GET(request) {
                   name: fileName,
                   sourceKind: matchingStep ? 'step' : 'glb',
                   kind: matchingStep ? 'step' : 'glb',
+                  hash: blobHash,
                   assetFile: b.pathname,
                   url: fullDownloadUrl,
                   outputUrl: fullDownloadUrl,
