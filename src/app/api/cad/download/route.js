@@ -17,7 +17,8 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Missing file parameter' }, { status: 400 });
     }
 
-    const cleanFile = file.trim().replace(/^models\//, '').toLowerCase();
+    const rawFile = file.trim();
+    const cleanFile = rawFile.replace(/^models\//i, '').toLowerCase();
 
     // 1. Fetch from Cloudflare R2
     const r2AccountAccountId = process.env.R2_ACCOUNT_ID;
@@ -36,6 +37,41 @@ export async function GET(request) {
           },
         });
 
+        // Try direct key get first (Fastest)
+        const possibleKeys = [
+          rawFile,
+          `models/${cleanFile}`,
+          cleanFile
+        ];
+
+        for (const targetKey of possibleKeys) {
+          try {
+            const getCommand = new GetObjectCommand({
+              Bucket: r2BucketName,
+              Key: targetKey
+            });
+            const objectData = await s3Client.send(getCommand);
+            const byteArray = await objectData.Body.transformToByteArray();
+            const isStep = targetKey.toLowerCase().endsWith('.step') || targetKey.toLowerCase().endsWith('.stp');
+            const contentType = isStep ? 'application/x-step' : 'model/gltf-binary';
+            const fileName = path.basename(targetKey);
+
+            return new NextResponse(byteArray, {
+              status: 200,
+              headers: {
+                'Content-Type': contentType,
+                'Content-Disposition': `attachment; filename="${fileName}"`,
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Cache-Control': 'public, max-age=3600'
+              }
+            });
+          } catch (keyErr) {
+            // Continue trying next key
+          }
+        }
+
+        // List fallback
         const listCommand = new ListObjectsV2Command({
           Bucket: r2BucketName,
           Prefix: 'models/'
@@ -44,8 +80,7 @@ export async function GET(request) {
         const r2Data = await s3Client.send(listCommand);
         if (r2Data.Contents && r2Data.Contents.length > 0) {
           const matchingObj = r2Data.Contents.find(item => 
-            item.Key.toLowerCase() === file.toLowerCase() ||
-            item.Key.toLowerCase() === `models/${cleanFile}` ||
+            item.Key.toLowerCase() === rawFile.toLowerCase() ||
             item.Key.toLowerCase().includes(cleanFile)
           );
 
@@ -84,7 +119,7 @@ export async function GET(request) {
       const { blobs } = await list({ prefix: 'models/', token });
       if (blobs && blobs.length > 0) {
         const matchingBlob = blobs.find(b => 
-          b.pathname.toLowerCase() === file.toLowerCase() ||
+          b.pathname.toLowerCase() === rawFile.toLowerCase() ||
           b.pathname.toLowerCase().includes(cleanFile)
         );
 
