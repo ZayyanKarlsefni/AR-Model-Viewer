@@ -5,7 +5,7 @@ import { put } from '@vercel/blob';
 const r2AccountAccountId = process.env.R2_ACCOUNT_ID;
 const r2AccessKeyId = process.env.R2_ACCESS_KEY_ID;
 const r2SecretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-const r2BucketName = process.env.R2_BUCKET_NAME || 'cad-step-models';
+const r2BucketName = process.env.R2_BUCKET_NAME || 'cad-step-model';
 
 let s3Client = null;
 if (r2AccountAccountId && r2AccessKeyId && r2SecretAccessKey) {
