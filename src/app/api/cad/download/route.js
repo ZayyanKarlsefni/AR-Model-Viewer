@@ -35,6 +35,7 @@ export async function GET(request) {
             accessKeyId: r2AccessKeyId,
             secretAccessKey: r2SecretAccessKey,
           },
+          forcePathStyle: true,
         });
 
         // Try direct key get first (Fastest)

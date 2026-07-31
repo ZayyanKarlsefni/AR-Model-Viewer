@@ -1,7 +1,6 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { put } from '@vercel/blob';
 
-// Initialize S3 Client for Cloudflare R2 / AWS S3 / Supabase Storage
 const r2AccountAccountId = process.env.R2_ACCOUNT_ID;
 const r2AccessKeyId = process.env.R2_ACCESS_KEY_ID;
 const r2SecretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
@@ -16,12 +15,10 @@ if (r2AccountAccountId && r2AccessKeyId && r2SecretAccessKey) {
       accessKeyId: r2AccessKeyId,
       secretAccessKey: r2SecretAccessKey,
     },
+    forcePathStyle: true,
   });
 }
 
-/**
- * Upload a CAD STEP / GLB file to Cloudflare R2 or Vercel Blob fallback
- */
 export async function uploadCadFile(filename, buffer, contentType = 'application/x-step') {
   if (s3Client) {
     const key = `models/${filename}`;
@@ -38,7 +35,6 @@ export async function uploadCadFile(filename, buffer, contentType = 'application
     return { url: publicUrl, isR2: true };
   }
 
-  // Fallback to Vercel Blob
   const blob = await put(`models/${filename}`, buffer, {
     access: 'public',
     addRandomSuffix: false,

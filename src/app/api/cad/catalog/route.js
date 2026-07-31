@@ -27,6 +27,7 @@ export async function GET() {
             accessKeyId: r2AccessKeyId,
             secretAccessKey: r2SecretAccessKey,
           },
+          forcePathStyle: true,
         });
 
         const command = new ListObjectsV2Command({

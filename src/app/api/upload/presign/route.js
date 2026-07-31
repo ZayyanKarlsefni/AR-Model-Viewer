@@ -30,6 +30,7 @@ export async function GET(request) {
         accessKeyId: r2AccessKeyId,
         secretAccessKey: r2SecretAccessKey,
       },
+      forcePathStyle: true,
     });
 
     const cleanExt = ext.replace('.', '').toLowerCase();
