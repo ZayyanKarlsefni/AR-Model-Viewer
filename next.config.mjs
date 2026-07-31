@@ -1,6 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  async rewrites() {
+    return [
+      {
+        source: '/__cad/:path*',
+        destination: '/api/cad/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
