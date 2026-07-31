@@ -34,6 +34,7 @@ export async function GET(request) {
             accessKeyId: r2AccessKeyId,
             secretAccessKey: r2SecretAccessKey,
           },
+          forcePathStyle: true,
         });
 
         const command = new ListObjectsV2Command({
@@ -43,13 +44,15 @@ export async function GET(request) {
 
         const r2Data = await s3Client.send(command);
         if (r2Data.Contents && r2Data.Contents.length > 0) {
-          const matchingObj = r2Data.Contents.find(item => item.Key.toLowerCase().includes(cleanCode));
-          if (matchingObj) {
-            const publicUrl = process.env.R2_PUBLIC_DOMAIN 
-              ? `${process.env.R2_PUBLIC_DOMAIN}/${matchingObj.Key}`
-              : `https://${r2BucketName}.${r2AccountAccountId}.r2.cloudflarestorage.com/${matchingObj.Key}`;
+          // Prefer .glb file if both exist, otherwise use .step
+          const matchingObjs = r2Data.Contents.filter(item => item.Key.toLowerCase().includes(cleanCode));
+          if (matchingObjs.length > 0) {
+            const matchingGlb = matchingObjs.find(item => item.Key.toLowerCase().endsWith('.glb'));
+            const targetObj = matchingGlb || matchingObjs[0];
+
+            const publicUrl = `/api/cad/download?file=${encodeURIComponent(targetObj.Key)}`;
             
-            return NextResponse.json({ url: publicUrl, storage: 'cloudflare-r2', key: matchingObj.Key }, {
+            return NextResponse.json({ url: publicUrl, storage: 'cloudflare-r2', key: targetObj.Key }, {
               headers: { 'Cache-Control': 'no-store, max-age=0' }
             });
           }
@@ -70,8 +73,8 @@ export async function GET(request) {
       if (blobs && blobs.length > 0) {
         const matchingBlobs = blobs.filter(b => b.pathname.toLowerCase().includes(cleanCode));
         if (matchingBlobs.length > 0) {
-          const targetBlob = matchingBlobs.find(b => b.pathname.includes('_compressed')) || matchingBlobs[0];
-          return NextResponse.json({ url: targetBlob.url, storage: 'vercel-blob' }, {
+          const targetBlob = matchingBlobs.find(b => b.pathname.toLowerCase().endsWith('.glb')) || matchingBlobs[0];
+          return NextResponse.json({ url: targetBlob.url, storage: 'vercel-blob', key: targetBlob.pathname }, {
             headers: { 'Cache-Control': 'no-store, max-age=0' }
           });
         }
@@ -84,7 +87,7 @@ export async function GET(request) {
       const files = fs.readdirSync(uploadsDir);
       const matchingFile = files.find(f => f.toLowerCase().includes(cleanCode));
       if (matchingFile) {
-        return NextResponse.json({ url: `/uploads/${matchingFile}`, storage: 'local' }, {
+        return NextResponse.json({ url: `/uploads/${matchingFile}`, storage: 'local', key: `models/${matchingFile}` }, {
           headers: { 'Cache-Control': 'no-store, max-age=0' }
         });
       }
