@@ -4,10 +4,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   return NextResponse.json({
-    schemaVersion: 1,
-    runs: [],
-    files: {}
+    error: "Generation status is not available for this CAD Viewer backend"
   }, {
+    status: 501,
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Cache-Control': 'no-store, max-age=0'

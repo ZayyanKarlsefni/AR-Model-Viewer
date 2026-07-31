@@ -4,9 +4,9 @@ export const dynamic = 'force-dynamic';
 
 export async function POST() {
   return NextResponse.json({
-    ok: true,
-    message: "STEP artifact ready"
+    error: "STEP artifact generation is not enabled for this CAD Viewer backend"
   }, {
+    status: 501,
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Cache-Control': 'no-store, max-age=0'
