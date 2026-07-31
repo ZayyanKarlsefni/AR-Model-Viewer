@@ -16,14 +16,27 @@ function ViewerContent() {
   const [hiddenParts, setHiddenParts] = useState({});
   const [selectedPart, setSelectedPart] = useState(null);
 
-  // Appearance & Display State
-  const [themeMode, setThemeMode] = useState('dark');
+  // === APPEARANCE CONTROLS ===
+  const [themeMode, setThemeMode] = useState('workbench'); // 'workbench' | 'system' | 'light' | 'dark'
+  const [colorMode, setColorMode] = useState('system'); // 'system' | 'light' | 'dark'
+  const [surfaceColors, setSurfaceColors] = useState([
+    '#B6C4CE', '#F4A7A7', '#F8C77E', '#F7E33D', '#B9E88F',
+    '#8FE3C0', '#92D7F5', '#A968FF', '#C7A8FF', '#F2A7D9'
+  ]);
+  const [activeColor, setActiveColor] = useState('#B6C4CE');
+  const [cycleColors, setCycleColors] = useState(false);
+  const [overrideColors, setOverrideColors] = useState(false);
+  const [saturation, setSaturation] = useState(1.18);
+  const [contrast, setContrast] = useState(1.12);
+
+  // === DISPLAY CONTROLS ===
+  const [projection, setProjection] = useState('perspective'); // 'perspective' | 'orthographic'
+  const [displayMode, setDisplayMode] = useState('shaded'); // 'shaded' | 'wireframe'
   const [exposure, setExposure] = useState(1.0);
   const [shadowIntensity, setShadowIntensity] = useState(1.5);
   const [autoRotate, setAutoRotate] = useState(false);
-  const [wireframeMode, setWireframeMode] = useState(false);
 
-  // States for Presentation Mode
+  // Presentation State
   const [isPresenting, setIsPresenting] = useState(false);
   const presentationIntervalRef = useRef(null);
   const currentAngleIndexRef = useRef(0);
@@ -74,16 +87,13 @@ function ViewerContent() {
       });
   }, [code, file]);
 
-  // Extract Assembly Parts Tree from model-viewer GLTF Scene
+  // Extract Assembly Parts Tree from GLTF Scene
   useEffect(() => {
     const mv = viewerRef.current;
     if (!mv) return;
 
     const handleLoad = () => {
       try {
-        const symbol = Object.getOwnPropertySymbols(mv).find(s => s.description === 'scene' || s.toString().includes('scene'));
-        const scene = mv[symbol] || mv.model?.gltf?.scene;
-        
         const extractedParts = [];
         if (mv.model && mv.model.materials) {
           mv.model.materials.forEach((mat, idx) => {
@@ -91,13 +101,13 @@ function ViewerContent() {
               id: `mat-${idx}`,
               name: mat.name || `Assembly Component : ${idx + 1}`,
               type: 'Material / Body',
+              material: mat,
               visible: true
             });
           });
         }
 
         if (extractedParts.length === 0) {
-          // Default Part Hierarchy Fallback for CAD Assembly
           setPartsList([
             { id: 'p1', name: 'Main Frame Assembly:1', type: 'Assembly', visible: true },
             { id: 'p2', name: 'Side C-Channel Frame:1', type: 'Part', visible: true },
@@ -105,21 +115,36 @@ function ViewerContent() {
             { id: 'p4', name: 'Roller Assembly Group:1', type: 'Group', visible: true },
             { id: 'p5', name: 'Pipa Roller Tube:1..13', type: 'Part', visible: true },
             { id: 'p6', name: 'Shaft Shaft Bar:1..13', type: 'Part', visible: true },
-            { id: 'p7', name: 'Bearing & End Cup:1..26', type: 'Part', visible: true },
-            { id: 'p8', name: 'Support Legs & Foot Plate:1..4', type: 'Assembly', visible: true },
-            { id: 'p9', name: 'Side Guide Rails & End Stop:1', type: 'Part', visible: true }
+            { id: 'p7', name: 'Bearing & End Cup:1..26', type: 'Part', visible: true }
           ]);
         } else {
           setPartsList(extractedParts);
         }
       } catch (e) {
-        console.log('Tree extraction note:', e);
+        console.log('Tree extraction:', e);
       }
     };
 
     mv.addEventListener('load', handleLoad);
     return () => mv.removeEventListener('load', handleLoad);
   }, [modelUrl]);
+
+  // Handle color override on material
+  const applyColorToPart = (colorHex) => {
+    setActiveColor(colorHex);
+    const mv = viewerRef.current;
+    if (!mv || !mv.model || !mv.model.materials) return;
+
+    // Apply color to selected material or first material
+    const targetMat = mv.model.materials.find(m => m.name === selectedPart) || mv.model.materials[0];
+    if (targetMat && targetMat.pbrMetallicRoughness) {
+      // Hex to RGBA
+      const r = parseInt(colorHex.slice(1, 3), 16) / 255;
+      const g = parseInt(colorHex.slice(3, 5), 16) / 255;
+      const b = parseInt(colorHex.slice(5, 7), 16) / 255;
+      targetMat.pbrMetallicRoughness.setBaseColorFactor([r, g, b, 1.0]);
+    }
+  };
 
   const togglePartVisibility = (partId) => {
     setHiddenParts(prev => ({
@@ -163,6 +188,7 @@ function ViewerContent() {
   const getContainerBg = () => {
     if (themeMode === 'workbench') return '#e2e8f0';
     if (themeMode === 'light') return '#ffffff';
+    if (themeMode === 'system') return '#f1f5f9';
     return '#0f172a';
   };
 
@@ -177,7 +203,7 @@ function ViewerContent() {
       {/* TOP HEADER NAVIGATION */}
       <header className="viewer-header">
         <div className="header-left">
-          <h1 className="logo-text">CAD Viewer <span>Inspection & AR</span></h1>
+          <h1 className="logo-text">CAD Viewer <span>INSPECTION & AR</span></h1>
         </div>
 
         <div className="header-actions">
@@ -198,7 +224,7 @@ function ViewerContent() {
         {loading && (
           <div className="loader-container">
             <div className="spinner"></div>
-            <p className="loading-text">Memuat Model 3D & Assembly Tree...</p>
+            <p className="loading-text">Memuat Model 3D & Inspection Panel...</p>
           </div>
         )}
 
@@ -213,7 +239,7 @@ function ViewerContent() {
         {!loading && !error && modelUrl && (
           <div className="canvas-and-sidebar">
             {/* 3D CANVAS VIEWPORT */}
-            <div className="canvas-viewport">
+            <div className="canvas-viewport" style={{ filter: `saturate(${saturation}) contrast(${contrast})` }}>
               {isPresenting && (
                 <div className="presentation-badge">
                   <span className="rec-dot"></span> PRESENTASI SINEMATIK AKTIF
@@ -245,7 +271,7 @@ function ViewerContent() {
               </model-viewer>
             </div>
 
-            {/* RIGHT SIDEBAR INSPECTION PANEL (Tree, Display, Appearance) */}
+            {/* FULL RIGHT SIDEBAR INSPECTION PANEL */}
             <aside className="inspection-sidebar">
               {/* SIDEBAR TABS HEADER */}
               <div className="sidebar-tabs">
@@ -282,8 +308,8 @@ function ViewerContent() {
                       return (
                         <div
                           key={part.id}
-                          className={`tree-item ${selectedPart === part.id ? 'selected' : ''}`}
-                          onClick={() => setSelectedPart(part.id)}
+                          className={`tree-item ${selectedPart === part.name ? 'selected' : ''}`}
+                          onClick={() => setSelectedPart(part.name)}
                         >
                           <span
                             className="eye-icon"
@@ -308,8 +334,48 @@ function ViewerContent() {
               {/* TAB 2: DISPLAY CONTROLS */}
               {activeTab === 'display' && (
                 <div className="tab-content display-tab">
+                  <div className="section-title">
+                    <span>Display & Projection Settings</span>
+                  </div>
+
                   <div className="control-group">
-                    <label>Auto Rotation (360° Spin)</label>
+                    <label>Camera Projection</label>
+                    <div className="btn-group">
+                      <button
+                        className={`opt-btn ${projection === 'perspective' ? 'active' : ''}`}
+                        onClick={() => setProjection('perspective')}
+                      >
+                        Perspective
+                      </button>
+                      <button
+                        className={`opt-btn ${projection === 'orthographic' ? 'active' : ''}`}
+                        onClick={() => setProjection('orthographic')}
+                      >
+                        Orthographic
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="control-group">
+                    <label>Display Mode</label>
+                    <div className="btn-group">
+                      <button
+                        className={`opt-btn ${displayMode === 'shaded' ? 'active' : ''}`}
+                        onClick={() => setDisplayMode('shaded')}
+                      >
+                        Shaded Surface
+                      </button>
+                      <button
+                        className={`opt-btn ${displayMode === 'wireframe' ? 'active' : ''}`}
+                        onClick={() => setDisplayMode('wireframe')}
+                      >
+                        Wireframe
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="control-group">
+                    <label>360° Auto Rotation Spin</label>
                     <button
                       className={`toggle-btn ${autoRotate ? 'active' : ''}`}
                       onClick={() => setAutoRotate(!autoRotate)}
@@ -332,7 +398,7 @@ function ViewerContent() {
                   </div>
 
                   <div className="control-group">
-                    <label>Exposure / Pencahayaan ({exposure}x)</label>
+                    <label>Exposure / Lighting ({exposure}x)</label>
                     <input
                       type="range"
                       min="0.2"
@@ -346,18 +412,13 @@ function ViewerContent() {
                 </div>
               )}
 
-              {/* TAB 3: APPEARANCE & THEME */}
+              {/* TAB 3: FULL APPEARANCE CONTROLS */}
               {activeTab === 'appearance' && (
                 <div className="tab-content appearance-tab">
+                  {/* Theme Section */}
                   <div className="control-group">
-                    <label>Viewer Theme Preset</label>
+                    <label>Theme Preset</label>
                     <div className="theme-options">
-                      <button
-                        className={`theme-btn ${themeMode === 'dark' ? 'active' : ''}`}
-                        onClick={() => setThemeMode('dark')}
-                      >
-                        🌙 Dark
-                      </button>
                       <button
                         className={`theme-btn ${themeMode === 'workbench' ? 'active' : ''}`}
                         onClick={() => setThemeMode('workbench')}
@@ -365,19 +426,148 @@ function ViewerContent() {
                         ⚙️ Workbench
                       </button>
                       <button
+                        className={`theme-btn ${themeMode === 'system' ? 'active' : ''}`}
+                        onClick={() => setThemeMode('system')}
+                      >
+                        💻 System
+                      </button>
+                      <button
                         className={`theme-btn ${themeMode === 'light' ? 'active' : ''}`}
                         onClick={() => setThemeMode('light')}
                       >
                         ☀️ Light
                       </button>
+                      <button
+                        className={`theme-btn ${themeMode === 'dark' ? 'active' : ''}`}
+                        onClick={() => setThemeMode('dark')}
+                      >
+                        🌙 Dark
+                      </button>
                     </div>
                   </div>
 
-                  <div className="info-card">
-                    <h4>ℹ️ Info CAD Assembly</h4>
-                    <p>Format: GLB / CAD 3D Solid</p>
-                    <p>Status: Ready for Inspection & AR Mode</p>
+                  {/* Color Mode Section */}
+                  <div className="control-group">
+                    <label>Color Mode</label>
+                    <div className="btn-group">
+                      <button
+                        className={`opt-btn ${colorMode === 'system' ? 'active' : ''}`}
+                        onClick={() => setColorMode('system')}
+                      >
+                        System
+                      </button>
+                      <button
+                        className={`opt-btn ${colorMode === 'light' ? 'active' : ''}`}
+                        onClick={() => setColorMode('light')}
+                      >
+                        Light
+                      </button>
+                      <button
+                        className={`opt-btn ${colorMode === 'dark' ? 'active' : ''}`}
+                        onClick={() => setColorMode('dark')}
+                      >
+                        Dark
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Surface Colors Swatches */}
+                  <div className="control-group">
+                    <div className="label-with-count">
+                      <label>Surface Colors</label>
+                      <span className="count-badge">{surfaceColors.length}/50</span>
+                    </div>
+                    <div className="color-grid">
+                      {surfaceColors.map((hex, idx) => (
+                        <div
+                          key={idx}
+                          className={`color-swatch ${activeColor === hex ? 'selected' : ''}`}
+                          style={{ background: hex }}
+                          onClick={() => applyColorToPart(hex)}
+                        />
+                      ))}
+                      <div
+                        className="color-swatch add-swatch"
+                        onClick={() => {
+                          const newColor = '#' + Math.floor(Math.random()*16777215).toString(16);
+                          setSurfaceColors([...surfaceColors, newColor]);
+                          applyColorToPart(newColor);
+                        }}
+                      >
+                        +
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Toggles */}
+                  <div className="control-group row-toggle">
+                    <label>Cycle Colors</label>
+                    <input
+                      type="checkbox"
+                      checked={cycleColors}
+                      onChange={(e) => setCycleColors(e.target.checked)}
+                      className="switch-input"
+                    />
+                  </div>
+
+                  <div className="control-group row-toggle">
+                    <label>Override Colors</label>
+                    <input
+                      type="checkbox"
+                      checked={overrideColors}
+                      onChange={(e) => setOverrideColors(e.target.checked)}
+                      className="switch-input"
+                    />
+                  </div>
+
+                  {/* Sliders */}
+                  <div className="control-group">
+                    <div className="label-val">
+                      <label>Saturation</label>
+                      <span>{saturation}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.2"
+                      max="2.5"
+                      step="0.02"
+                      value={saturation}
+                      onChange={(e) => setSaturation(parseFloat(e.target.value))}
+                      className="range-slider"
+                    />
+                  </div>
+
+                  <div className="control-group">
+                    <div className="label-val">
+                      <label>Contrast</label>
+                      <span>{contrast}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.2"
+                      max="2.5"
+                      step="0.02"
+                      value={contrast}
+                      onChange={(e) => setContrast(parseFloat(e.target.value))}
+                      className="range-slider"
+                    />
+                  </div>
+
+                  {/* Reset Button */}
+                  <button
+                    className="reset-btn"
+                    onClick={() => {
+                      setThemeMode('workbench');
+                      setColorMode('system');
+                      setActiveColor('#B6C4CE');
+                      setSaturation(1.18);
+                      setContrast(1.12);
+                      setOverrideColors(false);
+                      setCycleColors(false);
+                    }}
+                  >
+                    🔄 Restore to Default
+                  </button>
                 </div>
               )}
             </aside>
@@ -451,7 +641,6 @@ function ViewerContent() {
         .present-btn.active {
           background: #e11d48;
           border-color: #f43f5e;
-          animation: pulse 2s infinite;
         }
 
         .viewer-workspace {
@@ -497,18 +686,18 @@ function ViewerContent() {
 
         /* SIDEBAR STYLING */
         .inspection-sidebar {
-          width: 340px;
-          background: #1e293b;
+          width: 350px;
+          background: #0f172a;
           border-left: 1px solid #334155;
           display: flex;
           flex-direction: column;
           z-index: 30;
-          box-shadow: -4px 0 20px rgba(0,0,0,0.2);
+          box-shadow: -4px 0 20px rgba(0,0,0,0.25);
         }
 
         .sidebar-tabs {
           display: flex;
-          background: #0f172a;
+          background: #1e293b;
           border-bottom: 1px solid #334155;
         }
 
@@ -517,7 +706,7 @@ function ViewerContent() {
           background: transparent;
           border: none;
           color: #94a3b8;
-          padding: 0.75rem 0.5rem;
+          padding: 0.75rem 0.4rem;
           font-size: 0.75rem;
           font-weight: 600;
           cursor: pointer;
@@ -528,16 +717,16 @@ function ViewerContent() {
         .tab-btn.active {
           color: #38bdf8;
           border-bottom-color: #38bdf8;
-          background: #1e293b;
+          background: #0f172a;
         }
 
         .tab-content {
           flex: 1;
-          padding: 1rem;
+          padding: 1.2rem;
           overflow-y: auto;
           display: flex;
           flex-direction: column;
-          gap: 1rem;
+          gap: 1.25rem;
         }
 
         .section-title {
@@ -546,7 +735,7 @@ function ViewerContent() {
           align-items: center;
           font-size: 0.8rem;
           font-weight: 700;
-          color: #cbd5e1;
+          color: #f8fafc;
           border-bottom: 1px solid #334155;
           padding-bottom: 0.5rem;
         }
@@ -562,26 +751,25 @@ function ViewerContent() {
         .tree-list {
           display: flex;
           flex-direction: column;
-          gap: 0.35rem;
+          gap: 0.4rem;
         }
 
         .tree-item {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          padding: 0.45rem 0.6rem;
-          background: #0f172a;
+          padding: 0.5rem 0.75rem;
+          background: #1e293b;
           border: 1px solid #334155;
           border-radius: 6px;
           font-size: 0.75rem;
-          color: #e2e8f0;
+          color: #f8fafc;
           cursor: pointer;
           transition: all 0.15s ease;
         }
 
         .tree-item:hover {
           border-color: #38bdf8;
-          background: #1e293b;
         }
 
         .tree-item.selected {
@@ -608,14 +796,52 @@ function ViewerContent() {
 
         .control-group label {
           font-size: 0.75rem;
-          color: #cbd5e1;
+          color: #94a3b8;
           font-weight: 600;
         }
 
-        .toggle-btn {
-          background: #0f172a;
+        .label-with-count, .label-val {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .label-val span {
+          font-size: 0.75rem;
+          color: #38bdf8;
+          font-weight: 700;
+        }
+
+        .btn-group {
+          display: flex;
+          gap: 0.4rem;
+          background: #1e293b;
+          padding: 0.2rem;
+          border-radius: 6px;
           border: 1px solid #334155;
-          color: #e2e8f0;
+        }
+
+        .opt-btn {
+          flex: 1;
+          background: transparent;
+          border: none;
+          color: #94a3b8;
+          padding: 0.4rem;
+          border-radius: 4px;
+          font-size: 0.7rem;
+          font-weight: 600;
+          cursor: pointer;
+        }
+
+        .opt-btn.active {
+          background: #0284c7;
+          color: white;
+        }
+
+        .toggle-btn {
+          background: #1e293b;
+          border: 1px solid #334155;
+          color: #f8fafc;
           padding: 0.5rem;
           border-radius: 6px;
           font-size: 0.75rem;
@@ -629,22 +855,17 @@ function ViewerContent() {
           color: white;
         }
 
-        .range-slider {
-          width: 100%;
-          accent-color: #38bdf8;
-        }
-
         .theme-options {
-          display: flex;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
           gap: 0.4rem;
         }
 
         .theme-btn {
-          flex: 1;
-          background: #0f172a;
+          background: #1e293b;
           border: 1px solid #334155;
           color: #94a3b8;
-          padding: 0.4rem;
+          padding: 0.45rem;
           border-radius: 6px;
           font-size: 0.75rem;
           cursor: pointer;
@@ -656,18 +877,75 @@ function ViewerContent() {
           border-color: #38bdf8;
         }
 
-        .info-card {
-          background: #0f172a;
-          border: 1px solid #334155;
-          padding: 0.75rem;
+        .color-grid {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 0.4rem;
+          background: #1e293b;
+          padding: 0.5rem;
           border-radius: 6px;
-          font-size: 0.7rem;
-          color: #94a3b8;
+          border: 1px solid #334155;
         }
 
-        .info-card h4 {
-          margin: 0 0 0.4rem 0;
-          color: #38bdf8;
+        .color-swatch {
+          aspect-ratio: 1;
+          border-radius: 4px;
+          cursor: pointer;
+          border: 2px solid transparent;
+          transition: transform 0.15s ease;
+        }
+
+        .color-swatch:hover {
+          transform: scale(1.1);
+        }
+
+        .color-swatch.selected {
+          border-color: #ffffff;
+          box-shadow: 0 0 8px rgba(255,255,255,0.8);
+        }
+
+        .add-swatch {
+          background: #0f172a;
+          color: #94a3b8;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          border: 1px dashed #475569;
+        }
+
+        .row-toggle {
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .switch-input {
+          accent-color: #38bdf8;
+          width: 18px;
+          height: 18px;
+          cursor: pointer;
+        }
+
+        .range-slider {
+          width: 100%;
+          accent-color: #38bdf8;
+        }
+
+        .reset-btn {
+          background: #334155;
+          border: 1px solid #475569;
+          color: #f8fafc;
+          padding: 0.6rem;
+          border-radius: 6px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          cursor: pointer;
+          margin-top: 0.5rem;
+        }
+
+        .reset-btn:hover {
+          background: #475569;
         }
 
         .loader-container, .error-container {
