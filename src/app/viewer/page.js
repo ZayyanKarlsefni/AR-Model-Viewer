@@ -11,7 +11,8 @@ function ViewerContent() {
   const [modelUrl, setModelUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState('cad'); // 'cad' for CAD Workbench UI, 'ar' for Model-Viewer AR
+  const [viewMode, setViewMode] = useState('ar'); // Default to WebAR 3D mode on Vercel
+  const [isLocalHost, setIsLocalHost] = useState(false);
 
   // States for Exploded View
   const [hasAnimation, setHasAnimation] = useState(false);
@@ -31,8 +32,17 @@ function ViewerContent() {
   ];
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      setIsLocalHost(isLocal);
+      if (isLocal && file) {
+        setViewMode('cad');
+      }
+    }
+  }, [file]);
+
+  useEffect(() => {
     if (file) {
-      // Direct local file path
       const fullPath = file.startsWith('http') ? file : `http://127.0.0.1:5173/?dir=D:\\Plugin\\Text-To-CAD\\models&file=${file}`;
       setModelUrl(fullPath);
       setLoading(false);
@@ -111,7 +121,7 @@ function ViewerContent() {
     }
   };
 
-  // Determine CAD Workbench Viewer iframe URL
+  // Determine CAD Workbench Viewer iframe URL for localhost
   let cadViewerIframeUrl = 'http://127.0.0.1:5173/';
   if (file) {
     cadViewerIframeUrl = `http://127.0.0.1:5173/?dir=D:\\Plugin\\Text-To-CAD\\models&file=${file}`;
@@ -136,22 +146,24 @@ function ViewerContent() {
         <h1 className="logo-text">AR Model <span>Lite</span></h1>
         
         <div className="view-mode-toggle">
-          <button
-            className={`mode-btn ${viewMode === 'cad' ? 'active' : ''}`}
-            onClick={() => setViewMode('cad')}
-          >
-            📊 CAD Workbench (Tree & Inspection)
-          </button>
+          {isLocalHost && (
+            <button
+              className={`mode-btn ${viewMode === 'cad' ? 'active' : ''}`}
+              onClick={() => setViewMode('cad')}
+            >
+              📊 CAD Workbench (Local Desktop)
+            </button>
+          )}
           <button
             className={`mode-btn ${viewMode === 'ar' ? 'active' : ''}`}
             onClick={() => setViewMode('ar')}
           >
-            📱 WebAR & Cinematic Mode
+            📱 3D & WebAR Viewer (Online Cloud)
           </button>
         </div>
 
         <div className="header-actions">
-          {!loading && !error && modelUrl && viewMode === 'ar' && (
+          {!loading && !error && modelUrl && (
             <button
               onClick={togglePresentation}
               className={`present-btn ${isPresenting ? 'active' : ''}`}
@@ -181,8 +193,8 @@ function ViewerContent() {
 
         {!loading && !error && (
           <>
-            {/* 1. CAD WORKBENCH VIEW (Full Inspection Sidebar, Parts Tree, Appearance, Gizmo) */}
-            {viewMode === 'cad' && (
+            {/* 1. CAD WORKBENCH VIEW (Local Host Only) */}
+            {viewMode === 'cad' && isLocalHost && (
               <div className="cad-workbench-wrapper">
                 <iframe
                   src={cadViewerIframeUrl}
@@ -192,8 +204,8 @@ function ViewerContent() {
               </div>
             )}
 
-            {/* 2. WEBAR & CINEMATIC MODE */}
-            {viewMode === 'ar' && modelUrl && (
+            {/* 2. WEBAR & 3D CLOUD VIEW (Cloud Production Ready for All Devices) */}
+            {(viewMode === 'ar' || !isLocalHost) && modelUrl && (
               <div className="model-viewer-wrapper">
                 {isPresenting && (
                   <div className="presentation-badge">
