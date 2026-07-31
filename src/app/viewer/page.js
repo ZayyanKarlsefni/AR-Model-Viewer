@@ -14,6 +14,7 @@ function ViewerContent() {
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('cad');
   const [isLocalHost, setIsLocalHost] = useState(false);
+  const watchdogTimerRef = useRef(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -23,16 +24,29 @@ function ViewerContent() {
   }, []);
 
   useEffect(() => {
+    // Start 15-second loading watchdog timer
+    watchdogTimerRef.current = setTimeout(() => {
+      setLoading((currentLoading) => {
+        if (currentLoading) {
+          setError('⏱️ Timeout (15 Detik): Proses pemuatan file model CAD dari server melebihi batas waktu 15 detik. Silakan periksa koneksi internet Anda dan coba muat ulang.');
+          return false;
+        }
+        return false;
+      });
+    }, 15000);
+
     if (file) {
       setTargetFileRef(file);
       setModelUrl(file);
       setLoading(false);
+      if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
       return;
     }
 
     if (!code) {
       setError('Kode model tidak ditemukan. Pastikan URL memiliki parameter ?code=... atau ?file=...');
       setLoading(false);
+      if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
       return;
     }
 
@@ -45,10 +59,10 @@ function ViewerContent() {
       })
       .then((data) => {
         setModelUrl(data.url);
-        // If data.key is returned (e.g. models/xyz.step), use it directly
         const fileRef = data.key || `models/${code}.step`;
         setTargetFileRef(fileRef);
         setLoading(false);
+        if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
 
         // Record visit
         fetch('/api/admin/visits', {
@@ -60,8 +74,21 @@ function ViewerContent() {
       .catch((err) => {
         setError(err.message);
         setLoading(false);
+        if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
       });
+
+    return () => {
+      if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
+    };
   }, [code, file]);
+
+  const handleReload = () => {
+    setError(null);
+    setLoading(true);
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
+  };
 
   // Construct iframe URL for CAD Workbench
   let cadViewerIframeUrl = '';
@@ -108,14 +135,18 @@ function ViewerContent() {
           <div className="loader-container">
             <div className="spinner"></div>
             <p className="loading-text">Memuat CAD Workbench Full Inspection...</p>
+            <p className="loading-subtext">Mengunduh file STEP biner dari Cloudflare R2 (Batas waktu: 15s)...</p>
           </div>
         )}
 
         {error && (
           <div className="error-container">
-            <div className="error-icon-box">!</div>
-            <h2>Error Terjadi</h2>
-            <p>{error}</p>
+            <div className="error-icon-box">⚠️</div>
+            <h2>Peringatan Pemuatan</h2>
+            <p className="error-desc">{error}</p>
+            <button className="reload-btn" onClick={handleReload}>
+              🔄 Coba Muat Ulang Halaman
+            </button>
           </div>
         )}
 
@@ -301,6 +332,41 @@ function ViewerContent() {
           justify-content: center;
           height: 100%;
           gap: 1rem;
+          padding: 2rem;
+          text-align: center;
+        }
+
+        .loading-subtext {
+          font-size: 0.8rem;
+          color: #64748b;
+        }
+
+        .error-icon-box {
+          font-size: 2.5rem;
+        }
+
+        .error-desc {
+          max-width: 500px;
+          line-height: 1.5;
+          color: #f87171;
+          font-size: 0.9rem;
+        }
+
+        .reload-btn {
+          background: #0284c7;
+          color: white;
+          border: none;
+          padding: 0.6rem 1.25rem;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 0.85rem;
+          cursor: pointer;
+          margin-top: 0.5rem;
+          transition: background 0.2s;
+        }
+
+        .reload-btn:hover {
+          background: #0369a1;
         }
 
         .spinner {
