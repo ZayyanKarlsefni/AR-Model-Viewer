@@ -11,7 +11,7 @@ function ViewerContent() {
   const [modelUrl, setModelUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState('ar'); // Default to WebAR 3D mode on Vercel
+  const [viewMode, setViewMode] = useState('cad'); // 'cad' for CAD Workbench UI, 'ar' for Model-Viewer AR
   const [isLocalHost, setIsLocalHost] = useState(false);
 
   // States for Exploded View
@@ -35,11 +35,8 @@ function ViewerContent() {
     if (typeof window !== 'undefined') {
       const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       setIsLocalHost(isLocal);
-      if (isLocal && file) {
-        setViewMode('cad');
-      }
     }
-  }, [file]);
+  }, []);
 
   useEffect(() => {
     if (file) {
@@ -121,16 +118,17 @@ function ViewerContent() {
     }
   };
 
-  // Determine CAD Workbench Viewer iframe URL for localhost
-  let cadViewerIframeUrl = 'http://127.0.0.1:5173/';
+  // Determine CAD Workbench Viewer iframe URL (Local vs Cloud Hosted CAD Viewer)
+  let cadViewerIframeUrl = '';
   if (file) {
     cadViewerIframeUrl = `http://127.0.0.1:5173/?dir=D:\\Plugin\\Text-To-CAD\\models&file=${file}`;
   } else if (modelUrl) {
-    if (modelUrl.startsWith('http')) {
-      cadViewerIframeUrl = `http://127.0.0.1:5173/?file=${encodeURIComponent(modelUrl)}`;
+    if (isLocalHost) {
+      const fullOriginUrl = modelUrl.startsWith('http') ? modelUrl : `${window.location.origin}${modelUrl}`;
+      cadViewerIframeUrl = `http://127.0.0.1:5173/?url=${encodeURIComponent(fullOriginUrl)}`;
     } else {
-      const fullOriginUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}${modelUrl}`;
-      cadViewerIframeUrl = `http://127.0.0.1:5173/?file=${encodeURIComponent(fullOriginUrl)}`;
+      const fullOriginUrl = modelUrl.startsWith('http') ? modelUrl : `${typeof window !== 'undefined' ? window.location.origin : ''}${modelUrl}`;
+      cadViewerIframeUrl = `https://demo.cadskills.xyz/?url=${encodeURIComponent(fullOriginUrl)}`;
     }
   }
 
@@ -146,24 +144,22 @@ function ViewerContent() {
         <h1 className="logo-text">AR Model <span>Lite</span></h1>
         
         <div className="view-mode-toggle">
-          {isLocalHost && (
-            <button
-              className={`mode-btn ${viewMode === 'cad' ? 'active' : ''}`}
-              onClick={() => setViewMode('cad')}
-            >
-              📊 CAD Workbench (Local Desktop)
-            </button>
-          )}
+          <button
+            className={`mode-btn ${viewMode === 'cad' ? 'active' : ''}`}
+            onClick={() => setViewMode('cad')}
+          >
+            📊 CAD Workbench (Tree & Inspection)
+          </button>
           <button
             className={`mode-btn ${viewMode === 'ar' ? 'active' : ''}`}
             onClick={() => setViewMode('ar')}
           >
-            📱 3D & WebAR Viewer (Online Cloud)
+            📱 3D & WebAR Viewer (Mobile)
           </button>
         </div>
 
         <div className="header-actions">
-          {!loading && !error && modelUrl && (
+          {!loading && !error && modelUrl && viewMode === 'ar' && (
             <button
               onClick={togglePresentation}
               className={`present-btn ${isPresenting ? 'active' : ''}`}
@@ -193,8 +189,8 @@ function ViewerContent() {
 
         {!loading && !error && (
           <>
-            {/* 1. CAD WORKBENCH VIEW (Local Host Only) */}
-            {viewMode === 'cad' && isLocalHost && (
+            {/* 1. CAD WORKBENCH VIEW (Full Assembly Tree, Display, Appearance, Surface Colors, Orbit Gizmo) */}
+            {viewMode === 'cad' && (
               <div className="cad-workbench-wrapper">
                 <iframe
                   src={cadViewerIframeUrl}
@@ -204,8 +200,8 @@ function ViewerContent() {
               </div>
             )}
 
-            {/* 2. WEBAR & 3D CLOUD VIEW (Cloud Production Ready for All Devices) */}
-            {(viewMode === 'ar' || !isLocalHost) && modelUrl && (
+            {/* 2. WEBAR & 3D CLOUD VIEW (Mobile Optimized AR Mode) */}
+            {viewMode === 'ar' && modelUrl && (
               <div className="model-viewer-wrapper">
                 {isPresenting && (
                   <div className="presentation-badge">
