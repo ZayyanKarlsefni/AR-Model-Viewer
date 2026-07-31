@@ -25,6 +25,53 @@
         root.classList.toggle("dark", mode === "dark");
         root.style.colorScheme = mode;
       })();
+
+      // Diagnostic Logging & Interception System
+      (function() {
+        function emitLog(type, msg) {
+          try {
+            if (window.parent && window.parent !== window) {
+              window.parent.postMessage({ type: 'CAD_DIAGNOSTIC_LOG', level: type, text: String(msg) }, '*');
+            }
+          } catch(e) {}
+        }
+
+        window.addEventListener('error', function(e) {
+          emitLog('error', 'Uncaught Error: ' + (e.message || e.error) + ' at ' + e.filename + ':' + e.lineno);
+        });
+
+        window.addEventListener('unhandledrejection', function(e) {
+          emitLog('error', 'Unhandled Promise Rejection: ' + (e.reason?.message || e.reason));
+        });
+
+        const origError = console.error;
+        console.error = function() {
+          origError.apply(console, arguments);
+          const args = Array.from(arguments).map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+          emitLog('error', '[Console.Error] ' + args);
+        };
+
+        const origWarn = console.warn;
+        console.warn = function() {
+          origWarn.apply(console, arguments);
+          const args = Array.from(arguments).map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+          emitLog('warn', '[Console.Warn] ' + args);
+        };
+
+        // Intercept fetch requests to log network activity
+        const origFetch = window.fetch;
+        window.fetch = function() {
+          const url = arguments[0];
+          emitLog('info', '-> Fetching: ' + url);
+          return origFetch.apply(window, arguments).then(function(res) {
+            emitLog(res.ok ? 'info' : 'error', '<- Fetch Response [' + res.status + ' ' + res.statusText + '] for ' + url);
+            return res;
+          }).catch(function(err) {
+            emitLog('error', '<- Fetch Failed: ' + err.message + ' for ' + url);
+            throw err;
+          });
+        };
+      })();
     </script>
     <script type="module" crossorigin src="./assets/index-rdVDB1li.js"></script>
     <link rel="modulepreload" crossorigin href="./assets/vendor-react-7jnMmQ9s.js">
@@ -34,6 +81,6 @@
     <link rel="stylesheet" crossorigin href="./assets/index-vRirKMey.css">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"></div>
   </body>
 </html>

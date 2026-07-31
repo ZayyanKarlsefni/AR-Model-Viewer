@@ -14,28 +14,54 @@ function ViewerContent() {
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('cad');
   const [isLocalHost, setIsLocalHost] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [showConsole, setShowConsole] = useState(true);
   const watchdogTimerRef = useRef(null);
+  const logsEndRef = useRef(null);
+
+  const addLog = (level, text) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setLogs((prev) => [...prev, { timestamp, level, text }]);
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       setIsLocalHost(isLocal);
+
+      // Listen for diagnostic logs from CAD Viewer iframe
+      const handleMessage = (event) => {
+        if (event.data && event.data.type === 'CAD_DIAGNOSTIC_LOG') {
+          addLog(event.data.level || 'info', event.data.text);
+        }
+      };
+
+      window.addEventListener('message', handleMessage);
+      return () => window.removeEventListener('message', handleMessage);
     }
   }, []);
 
   useEffect(() => {
-    // Start 15-second loading watchdog timer
+    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [logs]);
+
+  useEffect(() => {
+    addLog('info', 'Inisialisasi CAD Viewer Workbench...');
+
+    // Start 20-second loading watchdog timer
     watchdogTimerRef.current = setTimeout(() => {
       setLoading((currentLoading) => {
         if (currentLoading) {
-          setError('⏱️ Timeout (15 Detik): Proses pemuatan file model CAD dari server melebihi batas waktu 15 detik. Silakan periksa koneksi internet Anda dan coba muat ulang.');
+          addLog('error', '⏱️ TIMEOUT: Loading melebihi 20 detik.');
+          setError('⏱️ Timeout (20s): Pemuatan file model CAD dari Cloudflare R2 melebihi 20 detik. Silakan periksa Diagnostic Log Panel di bawah.');
           return false;
         }
         return false;
       });
-    }, 15000);
+    }, 20000);
 
     if (file) {
+      addLog('info', `Menggunakan parameter file langsung: ${file}`);
       setTargetFileRef(file);
       setModelUrl(file);
       setLoading(false);
@@ -44,27 +70,31 @@ function ViewerContent() {
     }
 
     if (!code) {
+      addLog('error', 'Kode model tidak ditemukan di URL.');
       setError('Kode model tidak ditemukan. Pastikan URL memiliki parameter ?code=... atau ?file=...');
       setLoading(false);
       if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
       return;
     }
 
+    addLog('info', `Mengambil metadata model untuk kode: ${code}`);
     fetch(`/api/model?code=${code}`)
       .then((res) => {
+        addLog('info', `API /api/model status: ${res.status} ${res.statusText}`);
         if (!res.ok) {
           throw new Error('Model tidak ditemukan di server.');
         }
         return res.json();
       })
       .then((data) => {
+        addLog('info', `URL Model diterima: ${data.url || 'N/A'}`);
         setModelUrl(data.url);
         const fileRef = data.key || `models/${code}.step`;
+        addLog('info', `File Reference CAD: ${fileRef}`);
         setTargetFileRef(fileRef);
         setLoading(false);
         if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
 
-        // Record visit
         fetch('/api/admin/visits', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -72,6 +102,7 @@ function ViewerContent() {
         }).catch(() => {});
       })
       .catch((err) => {
+        addLog('error', `Error fetching model metadata: ${err.message}`);
         setError(err.message);
         setLoading(false);
         if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
@@ -90,7 +121,6 @@ function ViewerContent() {
     }
   };
 
-  // Construct iframe URL for CAD Workbench
   let cadViewerIframeUrl = '';
   if (targetFileRef) {
     cadViewerIframeUrl = `/cad-viewer/index.html?file=${encodeURIComponent(targetFileRef)}`;
@@ -106,7 +136,7 @@ function ViewerContent() {
         strategy="afterInteractive"
       />
 
-      {/* TOP BAR MODE TOGGLE */}
+      {/* TOP BAR */}
       <header className="viewer-header">
         <h1 className="logo-text">AR Model <span>Lite</span></h1>
         
@@ -115,7 +145,7 @@ function ViewerContent() {
             className={`mode-btn ${viewMode === 'cad' ? 'active' : ''}`}
             onClick={() => setViewMode('cad')}
           >
-            📊 CAD Workbench (Full Inspection & Controls)
+            📊 CAD Workbench (Full Inspection)
           </button>
           <button
             className={`mode-btn ${viewMode === 'ar' ? 'active' : ''}`}
@@ -126,6 +156,12 @@ function ViewerContent() {
         </div>
 
         <div className="header-actions">
+          <button
+            className="console-toggle-btn"
+            onClick={() => setShowConsole(!showConsole)}
+          >
+            📋 Logs ({logs.length})
+          </button>
           {code && <span className="model-id">ID: {code.substring(0, 8)}</span>}
         </div>
       </header>
@@ -135,14 +171,14 @@ function ViewerContent() {
           <div className="loader-container">
             <div className="spinner"></div>
             <p className="loading-text">Memuat CAD Workbench Full Inspection...</p>
-            <p className="loading-subtext">Mengunduh file STEP biner dari Cloudflare R2 (Batas waktu: 15s)...</p>
+            <p className="loading-subtext">Mengunduh biner STEP dari Cloudflare R2...</p>
           </div>
         )}
 
         {error && (
           <div className="error-container">
             <div className="error-icon-box">⚠️</div>
-            <h2>Peringatan Pemuatan</h2>
+            <h2>Status Pemuatan</h2>
             <p className="error-desc">{error}</p>
             <button className="reload-btn" onClick={handleReload}>
               🔄 Coba Muat Ulang Halaman
@@ -152,7 +188,6 @@ function ViewerContent() {
 
         {!loading && !error && (
           <>
-            {/* 1. NATIVE BUNDLED FULL CAD WORKBENCH */}
             {viewMode === 'cad' && (
               <div className="cad-workbench-wrapper">
                 <iframe
@@ -163,7 +198,6 @@ function ViewerContent() {
               </div>
             )}
 
-            {/* 2. WEBAR & 3D CLOUD VIEW */}
             {viewMode === 'ar' && modelUrl && (
               <div className="model-viewer-wrapper">
                 <model-viewer
@@ -183,16 +217,36 @@ function ViewerContent() {
                   <button slot="ar-button" id="ar-button">
                     📱 Lihat di Ruangan (AR)
                   </button>
-
-                  <div id="ar-prompt">
-                    <img src="https://modelviewer.dev/shared-assets/icons/hand.png" alt="AR prompt hand icon" />
-                  </div>
                 </model-viewer>
               </div>
             )}
           </>
         )}
       </section>
+
+      {/* REAL-TIME DIAGNOSTIC CONSOLE OVERLAY */}
+      {showConsole && (
+        <div className="diagnostic-console">
+          <div className="console-header">
+            <span>📋 Real-Time Diagnostic Error Logs ({logs.length} entries)</span>
+            <button className="close-console-btn" onClick={() => setShowConsole(false)}>✕</button>
+          </div>
+          <div className="console-body">
+            {logs.length === 0 ? (
+              <div className="log-line info">[System] Belum ada log tercatat...</div>
+            ) : (
+              logs.map((log, index) => (
+                <div key={index} className={`log-line ${log.level}`}>
+                  <span className="log-time">[{log.timestamp}]</span>{' '}
+                  <span className="log-level">[{log.level.toUpperCase()}]</span>{' '}
+                  <span className="log-text">{log.text}</span>
+                </div>
+              ))
+            )}
+            <div ref={logsEndRef} />
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .viewer-container {
@@ -204,6 +258,7 @@ function ViewerContent() {
           flex-direction: column;
           font-family: var(--font-jetbrains-mono), monospace;
           overflow: hidden;
+          position: relative;
         }
 
         .viewer-header {
@@ -258,15 +313,21 @@ function ViewerContent() {
           box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
         }
 
-        .mode-btn:hover:not(.active) {
-          color: #f8fafc;
-          background: #1e293b;
-        }
-
         .header-actions {
           display: flex;
           align-items: center;
-          gap: 1rem;
+          gap: 0.75rem;
+        }
+
+        .console-toggle-btn {
+          background: #334155;
+          color: #38bdf8;
+          border: 1px solid #0284c7;
+          padding: 0.25rem 0.6rem;
+          border-radius: 4px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          cursor: pointer;
         }
 
         .model-id {
@@ -285,44 +346,10 @@ function ViewerContent() {
           height: calc(100vh - 48px);
         }
 
-        .cad-workbench-wrapper {
+        .cad-workbench-wrapper, .cad-workbench-iframe, .model-viewer-wrapper, .custom-viewer {
           width: 100%;
           height: 100%;
           border: none;
-        }
-
-        .cad-workbench-iframe {
-          width: 100%;
-          height: 100%;
-          border: none;
-        }
-
-        .model-viewer-wrapper {
-          width: 100%;
-          height: 100%;
-          position: relative;
-        }
-
-        .custom-viewer {
-          width: 100%;
-          height: 100%;
-          --poster-color: transparent;
-        }
-
-        #ar-button {
-          background-color: #0284c7;
-          border-radius: 8px;
-          border: none;
-          position: absolute;
-          bottom: 24px;
-          right: 24px;
-          color: white;
-          padding: 12px 20px;
-          font-weight: 600;
-          font-size: 0.9rem;
-          box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
-          cursor: pointer;
-          z-index: 100;
         }
 
         .loader-container, .error-container {
@@ -362,11 +389,6 @@ function ViewerContent() {
           font-size: 0.85rem;
           cursor: pointer;
           margin-top: 0.5rem;
-          transition: background 0.2s;
-        }
-
-        .reload-btn:hover {
-          background: #0369a1;
         }
 
         .spinner {
@@ -376,6 +398,80 @@ function ViewerContent() {
           border-top-color: #38bdf8;
           border-radius: 50%;
           animation: spin 1s linear infinite;
+        }
+
+        /* DIAGNOSTIC CONSOLE STYLES */
+        .diagnostic-console {
+          position: absolute;
+          bottom: 10px;
+          left: 10px;
+          right: 10px;
+          max-height: 220px;
+          background: rgba(15, 23, 42, 0.95);
+          border: 1px solid #38bdf8;
+          border-radius: 8px;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+          z-index: 1000;
+          display: flex;
+          flex-direction: column;
+          backdrop-filter: blur(8px);
+        }
+
+        .console-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.4rem 0.8rem;
+          background: #1e293b;
+          border-bottom: 1px solid #334155;
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: #38bdf8;
+        }
+
+        .close-console-btn {
+          background: transparent;
+          border: none;
+          color: #94a3b8;
+          font-size: 0.9rem;
+          cursor: pointer;
+        }
+
+        .console-body {
+          flex: 1;
+          overflow-y: auto;
+          padding: 0.5rem 0.8rem;
+          font-family: var(--font-jetbrains-mono), monospace;
+          font-size: 0.72rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+
+        .log-line {
+          word-break: break-all;
+          line-height: 1.4;
+        }
+
+        .log-line.info {
+          color: #94a3b8;
+        }
+
+        .log-line.warn {
+          color: #fbbf24;
+        }
+
+        .log-line.error {
+          color: #f87171;
+          font-weight: 600;
+        }
+
+        .log-time {
+          color: #64748b;
+        }
+
+        .log-level {
+          color: #38bdf8;
         }
 
         @keyframes spin {
