@@ -1,3 +1,4 @@
+import { S3Client, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { list } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import fs from 'fs';
@@ -16,8 +17,61 @@ export async function GET(request) {
     }
 
     const cleanCode = code.trim().toLowerCase();
-    const token = process.env.BLOB_READ_WRITE_TOKEN || FALLBACK_BLOB_TOKEN;
 
+    // 1. Check Cloudflare R2 Storage First (10 GB Free Storage)
+    const r2AccountAccountId = process.env.R2_ACCOUNT_ID;
+    const r2AccessKeyId = process.env.R2_ACCESS_KEY_ID;
+    const r2SecretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+    const r2BucketName = process.env.R2_BUCKET_NAME || 'cad-step-model';
+
+    if (r2AccountAccountId && r2AccessKeyId && r2SecretAccessKey) {
+      try {
+        const s3Client = new S3Client({
+          region: 'auto',
+          endpoint: `https://${r2AccountAccountId}.r2.cloudflarestorage.com`,
+          credentials: {
+            accessKeyId: r2AccessKeyId,
+            secretAccessKey: r2SecretAccessKey,
+          },
+        });
+
+        const listCommand = new ListObjectsV2Command({
+          Bucket: r2BucketName,
+          Prefix: 'models/'
+        });
+
+        const r2Data = await s3Client.send(listCommand);
+        if (r2Data.Contents && r2Data.Contents.length > 0) {
+          const matchingObj = r2Data.Contents.find(item => item.Key.toLowerCase().includes(cleanCode));
+          if (matchingObj) {
+            const getCommand = new GetObjectCommand({
+              Bucket: r2BucketName,
+              Key: matchingObj.Key
+            });
+
+            const objectData = await s3Client.send(getCommand);
+            const byteArray = await objectData.Body.transformToByteArray();
+            const isStep = matchingObj.Key.toLowerCase().endsWith('.step') || matchingObj.Key.toLowerCase().endsWith('.stp');
+            const contentType = isStep ? 'application/x-step' : 'model/gltf-binary';
+
+            return new NextResponse(byteArray, {
+              status: 200,
+              headers: {
+                'Content-Type': contentType,
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Cache-Control': 'public, max-age=3600'
+              }
+            });
+          }
+        }
+      } catch (r2Err) {
+        console.warn('Cloudflare R2 stream note:', r2Err);
+      }
+    }
+
+    // 2. Fallback to Vercel Blob Storage
+    const token = process.env.BLOB_READ_WRITE_TOKEN || FALLBACK_BLOB_TOKEN;
     if (token) {
       const { blobs } = await list({ prefix: 'models/', token });
       if (blobs && blobs.length > 0) {
@@ -40,6 +94,7 @@ export async function GET(request) {
       }
     }
 
+    // 3. Fallback to Local Storage
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
     if (fs.existsSync(uploadsDir)) {
       const files = fs.readdirSync(uploadsDir);

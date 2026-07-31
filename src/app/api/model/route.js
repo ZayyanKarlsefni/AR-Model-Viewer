@@ -1,35 +1,12 @@
-import { list, put, del } from '@vercel/blob';
+import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { list } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { NodeIO } from '@gltf-transform/core';
-import { prune, dedup, quantize } from '@gltf-transform/functions';
-import { KHRMeshQuantization, KHRTextureTransform } from '@gltf-transform/extensions';
 
-// Force Next.js App Router to execute this API route dynamically on every request (prevents stale static caching)
 export const dynamic = 'force-dynamic';
 
-// Fallback token to guarantee Blob access even if environment variable is missing on Vercel
 const FALLBACK_BLOB_TOKEN = 'vercel_blob_rw_dseMKFu73Lcnk2XU_avJhCkA7p8uvfc1R4QvJtEM7GOke5n';
-
-// Initialize glTF-Transform IO with registered extensions
-const io = new NodeIO().registerExtensions([KHRMeshQuantization, KHRTextureTransform]);
-
-// Helper function to compress GLB file buffer
-async function compressGlb(buffer) {
-  const doc = await io.readBinary(new Uint8Array(buffer));
-  await doc.transform(
-    prune(),
-    dedup(),
-    quantize({
-      quantizePosition: 14,
-      quantizeNormal: 10,
-      quantizeTexcoord: 12,
-      quantizeColor: 8
-    })
-  );
-  return await io.writeBinary(doc);
-}
 
 export async function GET(request) {
   try {
@@ -41,9 +18,49 @@ export async function GET(request) {
     }
 
     const cleanCode = code.trim().toLowerCase();
-    const token = process.env.BLOB_READ_WRITE_TOKEN || FALLBACK_BLOB_TOKEN;
 
-    // 1. Production Mode: Vercel Blob Storage
+    // 1. Check Cloudflare R2 Storage First (10 GB Free Storage)
+    const r2AccountAccountId = process.env.R2_ACCOUNT_ID;
+    const r2AccessKeyId = process.env.R2_ACCESS_KEY_ID;
+    const r2SecretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+    const r2BucketName = process.env.R2_BUCKET_NAME || 'cad-step-model';
+
+    if (r2AccountAccountId && r2AccessKeyId && r2SecretAccessKey) {
+      try {
+        const s3Client = new S3Client({
+          region: 'auto',
+          endpoint: `https://${r2AccountAccountId}.r2.cloudflarestorage.com`,
+          credentials: {
+            accessKeyId: r2AccessKeyId,
+            secretAccessKey: r2SecretAccessKey,
+          },
+        });
+
+        const command = new ListObjectsV2Command({
+          Bucket: r2BucketName,
+          Prefix: 'models/'
+        });
+
+        const r2Data = await s3Client.send(command);
+        if (r2Data.Contents && r2Data.Contents.length > 0) {
+          const matchingObj = r2Data.Contents.find(item => item.Key.toLowerCase().includes(cleanCode));
+          if (matchingObj) {
+            const publicUrl = process.env.R2_PUBLIC_DOMAIN 
+              ? `${process.env.R2_PUBLIC_DOMAIN}/${matchingObj.Key}`
+              : `https://${r2BucketName}.${r2AccountAccountId}.r2.cloudflarestorage.com/${matchingObj.Key}`;
+            
+            return NextResponse.json({ url: publicUrl, storage: 'cloudflare-r2', key: matchingObj.Key }, {
+              headers: { 'Cache-Control': 'no-store, max-age=0' }
+            });
+          }
+        }
+      } catch (r2Err) {
+        console.warn('Cloudflare R2 list note:', r2Err);
+      }
+    }
+
+    // 2. Fallback to Vercel Blob Storage
+    const token = process.env.BLOB_READ_WRITE_TOKEN || FALLBACK_BLOB_TOKEN;
     if (token) {
       const { blobs } = await list({ 
         prefix: 'models/',
@@ -51,83 +68,34 @@ export async function GET(request) {
       });
       
       if (blobs && blobs.length > 0) {
-        // Filter blobs that match the code (supports full GUID or 8-char short ID)
         const matchingBlobs = blobs.filter(b => b.pathname.toLowerCase().includes(cleanCode));
-        
         if (matchingBlobs.length > 0) {
-          // Check if a compressed version exists
-          const compressedBlob = matchingBlobs.find(b => b.pathname.includes('_compressed'));
-          if (compressedBlob) {
-            return NextResponse.json({ url: compressedBlob.url }, {
-              headers: { 'Cache-Control': 'no-store, max-age=0' }
-            });
-          }
-
-          // If only the original uncompressed model exists
-          const originalBlob = matchingBlobs.find(b => !b.pathname.includes('_compressed'));
-          if (originalBlob) {
-            console.log(`[Compression] Starting on-the-fly optimization for model: ${cleanCode}`);
-            
-            try {
-              const fileResponse = await fetch(originalBlob.url);
-              if (!fileResponse.ok) {
-                throw new Error('Failed to download original model from Vercel Blob');
-              }
-              const arrayBuffer = await fileResponse.arrayBuffer();
-
-              // Compress the model
-              const compressedBuffer = await compressGlb(arrayBuffer);
-
-              // Upload compressed model
-              const newBlob = await put(`models/${cleanCode}_compressed.glb`, Buffer.from(compressedBuffer), {
-                access: 'public',
-                addRandomSuffix: false,
-                token: token
-              });
-
-              // Delete original model to save storage space
-              try {
-                await del(originalBlob.url, { token: token });
-              } catch (delErr) {
-                console.error('[Compression] Warning: could not delete original blob:', delErr);
-              }
-
-              console.log(`[Compression] Completed for ${cleanCode}. Savings: ${((1 - compressedBuffer.byteLength / arrayBuffer.byteLength) * 100).toFixed(2)}%`);
-              return NextResponse.json({ url: newBlob.url }, {
-                headers: { 'Cache-Control': 'no-store, max-age=0' }
-              });
-            } catch (compressErr) {
-              console.error('[Compression] Optimization failed, fallback to original model:', compressErr);
-              return NextResponse.json({ url: originalBlob.url }, {
-                headers: { 'Cache-Control': 'no-store, max-age=0' }
-              });
-            }
-          }
+          const targetBlob = matchingBlobs.find(b => b.pathname.includes('_compressed')) || matchingBlobs[0];
+          return NextResponse.json({ url: targetBlob.url, storage: 'vercel-blob' }, {
+            headers: { 'Cache-Control': 'no-store, max-age=0' }
+          });
         }
       }
     }
 
-    // 2. Development Mode: Local Filesystem Fallback
+    // 3. Development Mode: Local Filesystem Fallback
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
     if (fs.existsSync(uploadsDir)) {
       const files = fs.readdirSync(uploadsDir);
       const matchingFile = files.find(f => f.toLowerCase().includes(cleanCode));
       if (matchingFile) {
-        return NextResponse.json({ url: `/uploads/${matchingFile}` }, {
+        return NextResponse.json({ url: `/uploads/${matchingFile}`, storage: 'local' }, {
           headers: { 'Cache-Control': 'no-store, max-age=0' }
         });
       }
     }
 
-    return NextResponse.json({ error: 'Model not found' }, { 
+    return NextResponse.json({ error: 'Model not found in any storage' }, { 
       status: 404,
       headers: { 'Cache-Control': 'no-store, max-age=0' }
     });
   } catch (error) {
     console.error('Error fetching model:', error);
-    return NextResponse.json({ error: error.message }, { 
-      status: 500,
-      headers: { 'Cache-Control': 'no-store, max-age=0' }
-    });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
