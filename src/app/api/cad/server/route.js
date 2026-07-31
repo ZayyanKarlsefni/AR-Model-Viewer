@@ -6,7 +6,7 @@ export async function GET() {
   return NextResponse.json({
     schemaVersion: 1,
     app: "cad-viewer",
-    backend: "cloudflare-r2",
+    backend: "vercel-blob",
     rootDir: "",
     stepArtifactGenerationAvailable: false
   }, {

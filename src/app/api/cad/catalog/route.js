@@ -8,8 +8,9 @@ export const dynamic = 'force-dynamic';
 
 const FALLBACK_BLOB_TOKEN = 'vercel_blob_rw_dseMKFu73Lcnk2XU_avJhCkA7p8uvfc1R4QvJtEM7GOke5n';
 
-export async function GET() {
+export async function GET(request) {
   try {
+    const originUrl = request ? new URL(request.url).origin : '';
     const entries = [];
 
     // 1. Fetch from Cloudflare R2
@@ -41,6 +42,8 @@ export async function GET() {
             const fileName = path.basename(item.Key);
             const isStep = fileName.toLowerCase().endsWith('.step') || fileName.toLowerCase().endsWith('.stp');
             const kind = isStep ? 'step' : 'glb';
+            const downloadPath = `/api/cad/download?file=${encodeURIComponent(item.Key)}`;
+            const fullDownloadUrl = `${originUrl}${downloadPath}`;
 
             entries.push({
               file: item.Key,
@@ -48,6 +51,10 @@ export async function GET() {
               sourceKind: kind,
               stepFile: item.Key,
               assetFile: item.Key,
+              url: fullDownloadUrl,
+              outputUrl: fullDownloadUrl,
+              stepUrl: fullDownloadUrl,
+              downloadUrl: fullDownloadUrl,
               size: item.Size,
               lastModified: item.LastModified
             });
@@ -68,12 +75,19 @@ export async function GET() {
             blobs.forEach((b) => {
               const fileName = path.basename(b.pathname);
               const isStep = fileName.toLowerCase().endsWith('.step') || fileName.toLowerCase().endsWith('.stp');
+              const downloadPath = `/api/cad/download?file=${encodeURIComponent(b.pathname)}`;
+              const fullDownloadUrl = `${originUrl}${downloadPath}`;
+
               entries.push({
                 file: b.pathname,
                 name: fileName,
                 sourceKind: isStep ? 'step' : 'glb',
                 stepFile: b.pathname,
                 assetFile: b.pathname,
+                url: fullDownloadUrl,
+                outputUrl: fullDownloadUrl,
+                stepUrl: fullDownloadUrl,
+                downloadUrl: fullDownloadUrl,
                 size: b.size
               });
             });
@@ -91,12 +105,19 @@ export async function GET() {
         const files = fs.readdirSync(uploadsDir);
         files.forEach((f) => {
           const isStep = f.toLowerCase().endsWith('.step') || f.toLowerCase().endsWith('.stp');
+          const downloadPath = `/api/cad/download?file=${encodeURIComponent(`models/${f}`)}`;
+          const fullDownloadUrl = `${originUrl}${downloadPath}`;
+
           entries.push({
             file: `models/${f}`,
             name: f,
             sourceKind: isStep ? 'step' : 'glb',
             stepFile: `models/${f}`,
-            assetFile: `models/${f}`
+            assetFile: `models/${f}`,
+            url: fullDownloadUrl,
+            outputUrl: fullDownloadUrl,
+            stepUrl: fullDownloadUrl,
+            downloadUrl: fullDownloadUrl
           });
         });
       }
