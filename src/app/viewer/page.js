@@ -64,9 +64,9 @@ function ViewerContent() {
   if (file) {
     cadViewerIframeUrl = `/cad-viewer/index.html?file=${encodeURIComponent(file)}`;
   } else if (code) {
-    const originUrl = typeof window !== 'undefined' ? window.location.origin : '';
-    const corsFileUrl = `${originUrl}/api/model-file?code=${code}`;
-    cadViewerIframeUrl = `/cad-viewer/index.html?file=${encodeURIComponent(corsFileUrl)}`;
+    // Use relative path — CAD viewer resolves it against its own origin
+    // Do NOT encodeURIComponent the full URL as viewer decodes ?file= as a direct fetch URL
+    cadViewerIframeUrl = `/cad-viewer/index.html?file=${encodeURIComponent('/api/model-file?code=' + code)}`;
   } else if (modelUrl) {
     cadViewerIframeUrl = `/cad-viewer/index.html?file=${encodeURIComponent(modelUrl)}`;
   }
