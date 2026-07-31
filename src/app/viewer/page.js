@@ -9,9 +9,10 @@ function ViewerContent() {
   const code = searchParams.get('code');
   const file = searchParams.get('file');
   const [modelUrl, setModelUrl] = useState(null);
+  const [corsModelUrl, setCorsModelUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState('ar'); // Default to 3D/WebAR mode so clients immediately see 3D model
+  const [viewMode, setViewMode] = useState('cad'); // Default to CAD Workbench Tree View
   const [isLocalHost, setIsLocalHost] = useState(false);
 
   // States for Exploded View
@@ -35,11 +36,8 @@ function ViewerContent() {
     if (typeof window !== 'undefined') {
       const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       setIsLocalHost(isLocal);
-      if (isLocal && file) {
-        setViewMode('cad');
-      }
     }
-  }, [file]);
+  }, []);
 
   useEffect(() => {
     if (file) {
@@ -53,6 +51,12 @@ function ViewerContent() {
       setError('Kode model tidak ditemukan. Pastikan URL memiliki parameter ?code=... atau ?file=...');
       setLoading(false);
       return;
+    }
+
+    // Set direct CORS proxy API URL for CAD Viewer Workbench
+    if (typeof window !== 'undefined') {
+      const corsUrl = `${window.location.origin}/api/model-file?code=${code}`;
+      setCorsModelUrl(corsUrl);
     }
 
     fetch(`/api/model?code=${code}`)
@@ -121,17 +125,16 @@ function ViewerContent() {
     }
   };
 
-  // Determine CAD Workbench Viewer iframe URL (Localhost vs External Demo)
+  // Determine CAD Workbench Viewer iframe URL with full TreeView support
   let cadViewerIframeUrl = '';
   if (file) {
     cadViewerIframeUrl = `http://127.0.0.1:5173/?dir=D:\\Plugin\\Text-To-CAD\\models&file=${file}`;
-  } else if (modelUrl) {
+  } else if (corsModelUrl || modelUrl) {
+    const targetUrl = corsModelUrl || (modelUrl.startsWith('http') ? modelUrl : `${typeof window !== 'undefined' ? window.location.origin : ''}${modelUrl}`);
     if (isLocalHost) {
-      const fullOriginUrl = modelUrl.startsWith('http') ? modelUrl : `${window.location.origin}${modelUrl}`;
-      cadViewerIframeUrl = `http://127.0.0.1:5173/?file=${encodeURIComponent(fullOriginUrl)}`;
+      cadViewerIframeUrl = `http://127.0.0.1:5173/?file=${encodeURIComponent(targetUrl)}`;
     } else {
-      const fullOriginUrl = modelUrl.startsWith('http') ? modelUrl : `${typeof window !== 'undefined' ? window.location.origin : ''}${modelUrl}`;
-      cadViewerIframeUrl = `https://demo.cadskills.xyz/?url=${encodeURIComponent(fullOriginUrl)}`;
+      cadViewerIframeUrl = `https://demo.cadskills.xyz/?url=${encodeURIComponent(targetUrl)}`;
     }
   }
 
@@ -148,23 +151,21 @@ function ViewerContent() {
         
         <div className="view-mode-toggle">
           <button
+            className={`mode-btn ${viewMode === 'cad' ? 'active' : ''}`}
+            onClick={() => setViewMode('cad')}
+          >
+            📊 CAD Workbench (Tree & Inspection)
+          </button>
+          <button
             className={`mode-btn ${viewMode === 'ar' ? 'active' : ''}`}
             onClick={() => setViewMode('ar')}
           >
-            📱 3D & WebAR Viewer (Instan)
+            📱 3D & WebAR Viewer (Mobile)
           </button>
-          {isLocalHost && (
-            <button
-              className={`mode-btn ${viewMode === 'cad' ? 'active' : ''}`}
-              onClick={() => setViewMode('cad')}
-            >
-              📊 CAD Workbench (Local Desktop)
-            </button>
-          )}
         </div>
 
         <div className="header-actions">
-          {!loading && !error && modelUrl && (
+          {!loading && !error && modelUrl && viewMode === 'ar' && (
             <button
               onClick={togglePresentation}
               className={`present-btn ${isPresenting ? 'active' : ''}`}
@@ -180,7 +181,7 @@ function ViewerContent() {
         {loading && (
           <div className="loader-container">
             <div className="spinner"></div>
-            <p className="loading-text">Memuat model 3D...</p>
+            <p className="loading-text">Memuat model 3D & TreeView...</p>
           </div>
         )}
 
@@ -194,7 +195,18 @@ function ViewerContent() {
 
         {!loading && !error && (
           <>
-            {/* 1. 3D & WEBAR VIEWER (Mode Utama: Langsung Tampil 3D + Siap AR di HP) */}
+            {/* 1. CAD WORKBENCH VIEW (Full Assembly Parts Tree, Display, Appearance, Surface Colors, Orbit Gizmo) */}
+            {viewMode === 'cad' && (
+              <div className="cad-workbench-wrapper">
+                <iframe
+                  src={cadViewerIframeUrl}
+                  className="cad-workbench-iframe"
+                  title="CAD Workbench 3D Inspection with TreeView"
+                />
+              </div>
+            )}
+
+            {/* 2. WEBAR & 3D CLOUD VIEW (Mobile Optimized AR Mode) */}
             {viewMode === 'ar' && modelUrl && (
               <div className="model-viewer-wrapper">
                 {isPresenting && (
@@ -241,17 +253,6 @@ function ViewerContent() {
                     />
                   </div>
                 )}
-              </div>
-            )}
-
-            {/* 2. CAD WORKBENCH VIEW (Local Host Desktop Mode) */}
-            {viewMode === 'cad' && isLocalHost && (
-              <div className="cad-workbench-wrapper">
-                <iframe
-                  src={cadViewerIframeUrl}
-                  className="cad-workbench-iframe"
-                  title="CAD Workbench 3D Inspection"
-                />
               </div>
             )}
           </>
