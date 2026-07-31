@@ -21,7 +21,7 @@ function ViewerContent() {
 
   const addLog = (level, text) => {
     const timestamp = new Date().toLocaleTimeString();
-    setLogs((prev) => [...prev, { timestamp, level, text }]);
+    setLogs((prev) => [...prev.slice(-49), { timestamp, level, text }]);
   };
 
   useEffect(() => {

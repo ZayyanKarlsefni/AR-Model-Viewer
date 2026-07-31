@@ -26,7 +26,7 @@
         root.style.colorScheme = mode;
       })();
 
-      // Diagnostic Logging & Interception System
+      // Clean Diagnostic Logging & Interception System (Errors & Warnings Only)
       (function() {
         function emitLog(type, msg) {
           try {
@@ -58,16 +58,17 @@
           emitLog('warn', '[Console.Warn] ' + args);
         };
 
-        // Intercept fetch requests to log network activity
+        // Intercept fetch requests ONLY on failure/error (Prevent React re-render flooding)
         const origFetch = window.fetch;
         window.fetch = function() {
           const url = arguments[0];
-          emitLog('info', '-> Fetching: ' + url);
           return origFetch.apply(window, arguments).then(function(res) {
-            emitLog(res.ok ? 'info' : 'error', '<- Fetch Response [' + res.status + ' ' + res.statusText + '] for ' + url);
+            if (!res.ok && res.status !== 501 && res.status !== 404) {
+              emitLog('error', '<- Fetch Error [' + res.status + ' ' + res.statusText + '] for ' + url);
+            }
             return res;
           }).catch(function(err) {
-            emitLog('error', '<- Fetch Failed: ' + err.message + ' for ' + url);
+            emitLog('error', '<- Fetch Network Failed: ' + err.message + ' for ' + url);
             throw err;
           });
         };
