@@ -40,15 +40,13 @@ export async function GET(request) {
         if (r2Data.Contents && r2Data.Contents.length > 0) {
           r2Data.Contents.forEach((item) => {
             const fileName = path.basename(item.Key);
-            const isStep = fileName.toLowerCase().endsWith('.step') || fileName.toLowerCase().endsWith('.stp');
-            const kind = isStep ? 'step' : 'glb';
             const downloadPath = `/api/cad/download?file=${encodeURIComponent(item.Key)}`;
             const fullDownloadUrl = `${originUrl}${downloadPath}`;
 
             entries.push({
               file: item.Key,
               name: fileName,
-              sourceKind: kind,
+              sourceKind: 'glb',
               stepFile: item.Key,
               assetFile: item.Key,
               url: fullDownloadUrl,
@@ -74,14 +72,13 @@ export async function GET(request) {
           if (blobs && blobs.length > 0) {
             blobs.forEach((b) => {
               const fileName = path.basename(b.pathname);
-              const isStep = fileName.toLowerCase().endsWith('.step') || fileName.toLowerCase().endsWith('.stp');
               const downloadPath = `/api/cad/download?file=${encodeURIComponent(b.pathname)}`;
               const fullDownloadUrl = `${originUrl}${downloadPath}`;
 
               entries.push({
                 file: b.pathname,
                 name: fileName,
-                sourceKind: isStep ? 'step' : 'glb',
+                sourceKind: 'glb',
                 stepFile: b.pathname,
                 assetFile: b.pathname,
                 url: fullDownloadUrl,
@@ -104,14 +101,13 @@ export async function GET(request) {
       if (fs.existsSync(uploadsDir)) {
         const files = fs.readdirSync(uploadsDir);
         files.forEach((f) => {
-          const isStep = f.toLowerCase().endsWith('.step') || f.toLowerCase().endsWith('.stp');
           const downloadPath = `/api/cad/download?file=${encodeURIComponent(`models/${f}`)}`;
           const fullDownloadUrl = `${originUrl}${downloadPath}`;
 
           entries.push({
             file: `models/${f}`,
             name: f,
-            sourceKind: isStep ? 'step' : 'glb',
+            sourceKind: 'glb',
             stepFile: `models/${f}`,
             assetFile: `models/${f}`,
             url: fullDownloadUrl,
