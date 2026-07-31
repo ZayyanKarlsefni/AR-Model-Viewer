@@ -7,10 +7,12 @@ import Script from 'next/script';
 function ViewerContent() {
   const searchParams = useSearchParams();
   const code = searchParams.get('code');
+  const file = searchParams.get('file');
   const [modelUrl, setModelUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+  const [viewMode, setViewMode] = useState('cad'); // 'cad' for CAD Workbench UI, 'ar' for Model-Viewer AR
+
   // States for Exploded View
   const [hasAnimation, setHasAnimation] = useState(false);
   const [sliderValue, setSliderValue] = useState(0);
@@ -29,8 +31,16 @@ function ViewerContent() {
   ];
 
   useEffect(() => {
+    if (file) {
+      // Direct local file path
+      const fullPath = file.startsWith('http') ? file : `http://127.0.0.1:5173/?dir=D:\\Plugin\\Text-To-CAD\\models&file=${file}`;
+      setModelUrl(fullPath);
+      setLoading(false);
+      return;
+    }
+
     if (!code) {
-      setError('Kode model tidak ditemukan. Pastikan URL memiliki parameter ?code=...');
+      setError('Kode model tidak ditemukan. Pastikan URL memiliki parameter ?code=... atau ?file=...');
       setLoading(false);
       return;
     }
@@ -57,54 +67,15 @@ function ViewerContent() {
         setError(err.message);
         setLoading(false);
       });
-  }, [code]);
+  }, [code, file]);
 
-  // Hook into model-viewer to detect animations
-  useEffect(() => {
-    const mv = viewerRef.current;
-    if (!mv) return;
-
-    const onLoad = () => {
-      if (mv.availableAnimations && mv.availableAnimations.length > 0) {
-        setHasAnimation(true);
-        setSliderValue(0);
-        mv.pause();
-      } else {
-        setHasAnimation(false);
-      }
-    };
-
-    mv.addEventListener('load', onLoad);
-    return () => {
-      mv.removeEventListener('load', onLoad);
-    };
-  }, [modelUrl]);
-
-  // Handle user manual interaction to pause Presentation Mode
-  useEffect(() => {
-    const mv = viewerRef.current;
-    if (!mv) return;
-
-    const onUserInteraction = () => {
-      if (isPresenting) {
-        stopPresentation();
-      }
-    };
-
-    mv.addEventListener('user-interaction', onUserInteraction);
-    return () => {
-      mv.removeEventListener('user-interaction', onUserInteraction);
-    };
-  }, [isPresenting]);
-
-  // Cleanup presentation interval on unmount
-  useEffect(() => {
-    return () => {
-      if (presentationIntervalRef.current) {
-        clearInterval(presentationIntervalRef.current);
-      }
-    };
-  }, []);
+  const togglePresentation = () => {
+    if (isPresenting) {
+      stopPresentation();
+    } else {
+      startPresentation();
+    }
+  };
 
   const startPresentation = () => {
     const mv = viewerRef.current;
@@ -119,7 +90,7 @@ function ViewerContent() {
       if (viewerRef.current) {
         viewerRef.current.cameraOrbit = cinematicAngles[currentAngleIndexRef.current];
       }
-    }, 5000);
+    }, 4500);
   };
 
   const stopPresentation = () => {
@@ -130,24 +101,28 @@ function ViewerContent() {
     }
   };
 
-  const togglePresentation = () => {
-    if (isPresenting) {
-      stopPresentation();
-    } else {
-      startPresentation();
+  const handleSliderChange = (e) => {
+    const val = parseFloat(e.target.value);
+    setSliderValue(val);
+
+    const mv = viewerRef.current;
+    if (mv && mv.duration) {
+      mv.currentTime = val * mv.duration;
     }
   };
 
-  // Control animation time based on slider input
-  const handleSliderChange = (e) => {
-    const val = parseInt(e.target.value, 10);
-    setSliderValue(val);
-    
-    const mv = viewerRef.current;
-    if (mv && mv.duration) {
-      mv.currentTime = (val / 100) * mv.duration;
+  // Determine CAD Workbench Viewer iframe URL
+  let cadViewerIframeUrl = 'http://127.0.0.1:5173/';
+  if (file) {
+    cadViewerIframeUrl = `http://127.0.0.1:5173/?dir=D:\\Plugin\\Text-To-CAD\\models&file=${file}`;
+  } else if (modelUrl) {
+    if (modelUrl.startsWith('http')) {
+      cadViewerIframeUrl = `http://127.0.0.1:5173/?file=${encodeURIComponent(modelUrl)}`;
+    } else {
+      const fullOriginUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}${modelUrl}`;
+      cadViewerIframeUrl = `http://127.0.0.1:5173/?file=${encodeURIComponent(fullOriginUrl)}`;
     }
-  };
+  }
 
   return (
     <main className="viewer-container">
@@ -160,8 +135,23 @@ function ViewerContent() {
       <header className="viewer-header">
         <h1 className="logo-text">AR Model <span>Lite</span></h1>
         
+        <div className="view-mode-toggle">
+          <button
+            className={`mode-btn ${viewMode === 'cad' ? 'active' : ''}`}
+            onClick={() => setViewMode('cad')}
+          >
+            📊 CAD Workbench (Tree & Inspection)
+          </button>
+          <button
+            className={`mode-btn ${viewMode === 'ar' ? 'active' : ''}`}
+            onClick={() => setViewMode('ar')}
+          >
+            📱 WebAR & Cinematic Mode
+          </button>
+        </div>
+
         <div className="header-actions">
-          {!loading && !error && modelUrl && (
+          {!loading && !error && modelUrl && viewMode === 'ar' && (
             <button
               onClick={togglePresentation}
               className={`present-btn ${isPresenting ? 'active' : ''}`}
@@ -189,111 +179,139 @@ function ViewerContent() {
           </div>
         )}
 
-        {!loading && !error && modelUrl && (
-          <div className="model-viewer-wrapper">
-            {/* Presentation Active Badge */}
-            {isPresenting && (
-              <div className="presentation-badge">
-                <span className="rec-dot"></span> PRESENTASI SINEMATIK AKTIF
-              </div>
-            )}
-
-            <model-viewer
-              ref={viewerRef}
-              src={modelUrl}
-              ar
-              ar-scale="fixed"
-              ar-modes="webxr scene-viewer quick-look"
-              camera-controls
-              poster="/poster.webp"
-              shadow-intensity="1.5"
-              shadow-softness="0.8"
-              auto-rotate={isPresenting || !hasAnimation}
-              rotation-per-second={isPresenting ? "12deg" : "30deg"}
-              interpolation-decay="200"
-              className="custom-viewer"
-            >
-              <button slot="ar-button" id="ar-button">
-                Lihat di Ruangan (AR)
-              </button>
-
-              <div id="ar-prompt">
-                <img src="https://modelviewer.dev/shared-assets/icons/hand.png" alt="AR prompt hand icon" />
-              </div>
-            </model-viewer>
-
-            {/* Custom interactive Exploded View Slider */}
-            {hasAnimation && (
-              <div className="exploded-slider-container">
-                <span className="slider-label">Urai Model</span>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={sliderValue}
-                  onChange={handleSliderChange}
-                  className="exploded-slider"
+        {!loading && !error && (
+          <>
+            {/* 1. CAD WORKBENCH VIEW (Full Inspection Sidebar, Parts Tree, Appearance, Gizmo) */}
+            {viewMode === 'cad' && (
+              <div className="cad-workbench-wrapper">
+                <iframe
+                  src={cadViewerIframeUrl}
+                  className="cad-workbench-iframe"
+                  title="CAD Workbench 3D Inspection"
                 />
-                <span className="slider-value">{sliderValue}%</span>
               </div>
             )}
-          </div>
+
+            {/* 2. WEBAR & CINEMATIC MODE */}
+            {viewMode === 'ar' && modelUrl && (
+              <div className="model-viewer-wrapper">
+                {isPresenting && (
+                  <div className="presentation-badge">
+                    <span className="rec-dot"></span> PRESENTASI SINEMATIK AKTIF
+                  </div>
+                )}
+
+                <model-viewer
+                  ref={viewerRef}
+                  src={modelUrl}
+                  ar
+                  ar-scale="fixed"
+                  ar-modes="webxr scene-viewer quick-look"
+                  camera-controls
+                  poster="/poster.webp"
+                  shadow-intensity="1.5"
+                  shadow-softness="0.8"
+                  auto-rotate={isPresenting || !hasAnimation}
+                  rotation-per-second={isPresenting ? "12deg" : "30deg"}
+                  interpolation-decay="200"
+                  className="custom-viewer"
+                >
+                  <button slot="ar-button" id="ar-button">
+                    Lihat di Ruangan (AR)
+                  </button>
+
+                  <div id="ar-prompt">
+                    <img src="https://modelviewer.dev/shared-assets/icons/hand.png" alt="AR prompt hand icon" />
+                  </div>
+                </model-viewer>
+
+                {hasAnimation && (
+                  <div className="exploded-slider-container">
+                    <span className="slider-label">Urai Model</span>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.001"
+                      value={sliderValue}
+                      onChange={handleSliderChange}
+                      className="exploded-slider"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         )}
       </section>
 
-      <footer className="viewer-footer">
-        <p>© 2026 AR Model Lite | Clean Web & Mobile Viewer</p>
-      </footer>
-
-      <style jsx global>{`
-        /* Global & Reset Styles - Light Mode - Prevents double scrollbars */
-        html, body {
-          margin: 0;
-          padding: 0;
-          height: 100%;
-          overflow: hidden;
-          background: #f8fafc;
-          color: #334155;
-          font-family: var(--font-jetbrains-mono), monospace;
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
-        }
-
+      <style jsx>{`
         .viewer-container {
+          width: 100vw;
+          height: 100vh;
+          background: #0f172a;
+          color: #f8fafc;
           display: flex;
           flex-direction: column;
-          height: 100vh;
-          width: 100vw;
-          background: radial-gradient(circle at 50% 0%, #ffffff 0%, #f1f5f9 100%);
-          box-sizing: border-box;
+          font-family: var(--font-jetbrains-mono), monospace;
+          overflow: hidden;
         }
 
         .viewer-header {
-          flex: 0 0 auto;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          height: 64px;
-          padding: 0 2rem;
-          background: rgba(255, 255, 255, 0.8);
-          backdrop-filter: blur(16px);
-          border-bottom: 1px solid #e2e8f0;
-          z-index: 10;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.01);
-          box-sizing: border-box;
+          padding: 0.75rem 1.5rem;
+          background: #1e293b;
+          border-bottom: 1px solid #334155;
+          z-index: 20;
         }
 
         .logo-text {
+          font-size: 1.1rem;
+          font-weight: 700;
+          letter-spacing: -0.02em;
+          color: #f8fafc;
           margin: 0;
-          font-size: 1.3rem;
-          font-weight: 800;
-          letter-spacing: -0.5px;
-          color: #0f172a;
         }
 
         .logo-text span {
-          font-weight: 300;
-          color: #64748b;
+          color: #38bdf8;
+          font-size: 0.85rem;
+          font-weight: 500;
+          text-transform: uppercase;
+        }
+
+        .view-mode-toggle {
+          display: flex;
+          gap: 0.5rem;
+          background: #0f172a;
+          padding: 0.25rem;
+          border-radius: 8px;
+          border: 1px solid #334155;
+        }
+
+        .mode-btn {
+          background: transparent;
+          border: none;
+          color: #94a3b8;
+          padding: 0.4rem 0.8rem;
+          border-radius: 6px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .mode-btn.active {
+          background: #0284c7;
+          color: #ffffff;
+          box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+        }
+
+        .mode-btn:hover:not(.active) {
+          color: #f8fafc;
+          background: #1e293b;
         }
 
         .header-actions {
@@ -302,366 +320,109 @@ function ViewerContent() {
           gap: 1rem;
         }
 
-        .present-btn {
-          background: #ffffff;
-          border: 1px solid #0f172a;
-          color: #0f172a;
-          padding: 0.45rem 1rem;
-          border-radius: 10px;
+        .model-id {
           font-size: 0.75rem;
-          font-weight: 700;
-          letter-spacing: 0.5px;
-          cursor: pointer;
-          transition: all 0.2s ease;
+          color: #64748b;
+          background: #0f172a;
+          padding: 0.25rem 0.6rem;
+          border-radius: 4px;
+          border: 1px solid #334155;
         }
 
-        .present-btn:hover {
-          background: #0f172a;
-          color: #ffffff;
+        .present-btn {
+          background: #334155;
+          color: #f8fafc;
+          border: 1px solid #475569;
+          padding: 0.4rem 0.8rem;
+          border-radius: 6px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
         }
 
         .present-btn.active {
-          background: #0f172a;
-          color: #ffffff;
-          border-color: #0f172a;
-          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+          background: #e11d48;
+          border-color: #f43f5e;
+          animation: pulse 2s infinite;
         }
 
-        .model-id {
-          font-size: 0.8rem;
-          font-weight: 600;
-          background: #f1f5f9;
-          padding: 0.35rem 0.75rem;
-          border-radius: 9999px;
-          color: #475569;
-          border: 1px solid #e2e8f0;
-        }
-
-        /* Viewport takes exactly the remaining screen space */
         .viewer-content {
-          flex: 1 1 auto;
-          display: flex;
-          justify-content: center;
-          align-items: center;
+          flex: 1;
           position: relative;
-          padding: 1.5rem;
-          box-sizing: border-box;
-          overflow: hidden;
-        }
-
-        /* Loader & Error */
-        .loader-container, .error-container {
-          text-align: center;
-          padding: 3rem 2rem;
-          border-radius: 24px;
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.03), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
-          max-width: 380px;
           width: 100%;
-          animation: fadeIn 0.4s ease-out;
-          box-sizing: border-box;
+          height: calc(100vh - 55px);
         }
 
-        .spinner {
-          width: 44px;
-          height: 44px;
-          border: 3.5px solid #f1f5f9;
-          border-left-color: #0f172a;
-          border-radius: 50%;
-          margin: 0 auto 1.25rem;
-          animation: spin 0.8s linear infinite;
+        .cad-workbench-wrapper {
+          width: 100%;
+          height: 100%;
+          border: none;
         }
 
-        .loading-text {
-          font-weight: 600;
-          color: #475569;
-          margin: 0;
-          font-size: 0.95rem;
+        .cad-workbench-iframe {
+          width: 100%;
+          height: 100%;
+          border: none;
         }
 
-        .error-icon-box {
-          font-size: 1.8rem;
-          font-weight: 800;
-          color: #ef4444;
-          width: 50px;
-          height: 50px;
-          border: 3px solid #ef4444;
-          border-radius: 50%;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          margin: 0 auto 1rem;
-        }
-
-        .error-container h2 {
-          margin: 0 0 0.5rem;
-          color: #ef4444;
-          font-size: 1.25rem;
-          font-weight: 700;
-        }
-
-        .error-container p {
-          color: #64748b;
-          margin: 0;
-          font-size: 0.9rem;
-        }
-
-        /* Model Viewer Wrapper - Fills content space exactly */
         .model-viewer-wrapper {
           width: 100%;
           height: 100%;
-          border-radius: 24px;
-          overflow: hidden;
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          box-shadow: 0 15px 30px -10px rgba(15, 23, 42, 0.06);
           position: relative;
-          animation: scaleUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-          box-sizing: border-box;
         }
 
-        model-viewer, .custom-viewer {
-          width: 100% !important;
-          height: 100% !important;
-          background-color: #ffffff;
+        .custom-viewer {
+          width: 100%;
+          height: 100%;
           --poster-color: transparent;
         }
 
-        /* Presentation Active Badge Overlay */
-        .presentation-badge {
-          position: absolute;
-          top: 1rem;
-          left: 50%;
-          transform: translateX(-50%);
-          background: rgba(15, 23, 42, 0.85);
-          backdrop-filter: blur(12px);
-          color: #ffffff;
-          padding: 0.45rem 1rem;
-          border-radius: 9999px;
-          font-size: 0.7rem;
-          font-weight: 700;
-          letter-spacing: 0.5px;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          z-index: 25;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .rec-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: #ef4444;
-          animation: pulseDot 1.5s infinite;
-        }
-
-        @keyframes pulseDot {
-          0% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.4; transform: scale(0.8); }
-          100% { opacity: 1; transform: scale(1); }
-        }
-
-        /* AR Button - Ultra Clean Dark Slate Button */
         #ar-button {
-          position: absolute;
-          bottom: 1.5rem;
-          left: 50%;
-          transform: translateX(-50%);
-          background: #0f172a;
-          color: #ffffff;
+          background-color: #0284c7;
+          border-radius: 8px;
           border: none;
-          padding: 0.85rem 1.85rem;
-          border-radius: 12px;
-          font-weight: 700;
-          font-size: 0.925rem;
-          box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.2);
-          cursor: pointer;
-          transition: all 0.2s ease;
-          z-index: 20;
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          letter-spacing: -0.1px;
-        }
-
-        #ar-button:hover {
-          background: #1e293b;
-          transform: translateX(-50%) translateY(-2px);
-          box-shadow: 0 12px 25px -4px rgba(15, 23, 42, 0.3);
-        }
-
-        #ar-button:active {
-          transform: translateX(-50%) translateY(0);
-        }
-
-        /* Custom Interactive Exploded View Slider Styling */
-        .exploded-slider-container {
           position: absolute;
-          bottom: 5.5rem;
-          left: 50%;
-          transform: translateX(-50%);
-          background: rgba(255, 255, 255, 0.85);
-          backdrop-filter: blur(12px);
-          border: 1px solid #e2e8f0;
-          padding: 0.75rem 1.5rem;
-          border-radius: 16px;
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
-          width: 85%;
-          max-width: 400px;
-          z-index: 25;
-          box-sizing: border-box;
-          transition: all 0.3s ease;
-        }
-
-        .slider-label {
-          font-size: 0.725rem;
-          font-weight: 700;
-          color: #0f172a;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          white-space: nowrap;
-        }
-
-        .exploded-slider {
-          flex: 1;
-          -webkit-appearance: none;
-          appearance: none;
-          height: 6px;
-          border-radius: 9999px;
-          background: #e2e8f0;
-          outline: none;
-        }
-
-        .exploded-slider::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          background: #0f172a;
+          bottom: 24px;
+          right: 24px;
+          color: white;
+          padding: 12px 20px;
+          font-weight: 600;
+          font-size: 0.9rem;
+          box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
           cursor: pointer;
-          transition: transform 0.1s ease;
+          z-index: 100;
         }
 
-        .exploded-slider::-webkit-slider-thumb:hover {
-          transform: scale(1.2);
-        }
-
-        .slider-value {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: #475569;
-          width: 32px;
-          text-align: right;
-        }
-
-        /* AR Prompt Hand Animation */
-        #ar-prompt {
-          position: absolute;
-          left: 50%;
-          bottom: 9rem;
-          transform: translateX(-50%);
-          display: none;
-          pointer-events: none;
-          animation: moveHand 3s ease-in-out infinite;
-        }
-
-        #ar-prompt img {
-          width: 44px;
-          filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15));
-        }
-
-        model-viewer[ar-status="session-started"] #ar-prompt {
-          display: block;
-        }
-
-        .viewer-footer {
-          flex: 0 0 auto;
-          text-align: center;
-          height: 48px;
+        .loader-container, .error-container {
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
-          font-size: 0.75rem;
-          color: #94a3b8;
-          border-top: 1px solid #e2e8f0;
-          background: #ffffff;
-          box-sizing: border-box;
+          height: 100%;
+          gap: 1rem;
         }
 
-        .viewer-footer p {
-          margin: 0;
+        .spinner {
+          width: 40px;
+          height: 40px;
+          border: 3px solid #334155;
+          border-top-color: #38bdf8;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
         }
 
-        /* Animations */
         @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(4px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes scaleUp {
-          from { transform: scale(0.98); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-
-        @keyframes moveHand {
-          0%, 100% { transform: translate(-50%, 0px); }
-          50% { transform: translate(-30%, -8px); }
-        }
-
-        /* Responsive Design - Mobile Optimized */
-        @media (max-width: 640px) {
-          .viewer-header {
-            padding: 0 1rem;
-            height: 56px;
-          }
-          .present-btn {
-            padding: 0.35rem 0.65rem;
-            font-size: 0.675rem;
-          }
-          #ar-button {
-            bottom: 1.25rem;
-            width: 85%;
-            text-align: center;
-            border-radius: 10px;
-            padding: 0.85rem 1.25rem;
-          }
-          .exploded-slider-container {
-            bottom: 5.25rem;
-            width: 90%;
-            padding: 0.65rem 1.25rem;
-          }
-          .model-viewer-wrapper {
-            border-radius: 16px;
-          }
-          .viewer-content {
-            padding: 0.75rem;
-          }
-          .viewer-footer {
-            height: 40px;
-          }
+          to { transform: rotate(360deg); }
         }
       `}</style>
     </main>
   );
 }
 
-export default function Viewer() {
+export default function ViewerPage() {
   return (
-    <Suspense fallback={
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8fafc', color: '#64748b' }}>
-        <div>Memuat antarmuka...</div>
-      </div>
-    }>
+    <Suspense fallback={<div>Loading...</div>}>
       <ViewerContent />
     </Suspense>
   );
