@@ -38,24 +38,47 @@ export async function GET(request) {
 
         const r2Data = await s3Client.send(command);
         if (r2Data.Contents && r2Data.Contents.length > 0) {
+          const keys = r2Data.Contents.map(i => i.Key);
+
           r2Data.Contents.forEach((item) => {
             const fileName = path.basename(item.Key);
+            const ext = path.extname(item.Key).toLowerCase();
+            const stem = item.Key.substring(0, item.Key.length - ext.length);
             const downloadPath = `/api/cad/download?file=${encodeURIComponent(item.Key)}`;
             const fullDownloadUrl = `${originUrl}${downloadPath}`;
 
-            entries.push({
-              file: item.Key,
-              name: fileName,
-              sourceKind: 'glb',
-              stepFile: item.Key,
-              assetFile: item.Key,
-              url: fullDownloadUrl,
-              outputUrl: fullDownloadUrl,
-              stepUrl: fullDownloadUrl,
-              downloadUrl: fullDownloadUrl,
-              size: item.Size,
-              lastModified: item.LastModified
-            });
+            if (ext === '.step' || ext === '.stp') {
+              const matchingGlbKey = keys.find(k => k.toLowerCase() === `${stem.toLowerCase()}.glb`);
+              const glbDownloadUrl = matchingGlbKey
+                ? `${originUrl}/api/cad/download?file=${encodeURIComponent(matchingGlbKey)}`
+                : fullDownloadUrl;
+
+              entries.push({
+                file: item.Key,
+                name: fileName,
+                sourceKind: 'step',
+                stepFile: item.Key,
+                assetFile: matchingGlbKey || item.Key,
+                url: glbDownloadUrl,
+                outputUrl: glbDownloadUrl,
+                stepUrl: fullDownloadUrl,
+                downloadUrl: fullDownloadUrl,
+                size: item.Size,
+                lastModified: item.LastModified
+              });
+            } else if (ext === '.glb') {
+              entries.push({
+                file: item.Key,
+                name: fileName,
+                sourceKind: 'glb',
+                assetFile: item.Key,
+                url: fullDownloadUrl,
+                outputUrl: fullDownloadUrl,
+                downloadUrl: fullDownloadUrl,
+                size: item.Size,
+                lastModified: item.LastModified
+              });
+            }
           });
         }
       } catch (r2Err) {
@@ -70,52 +93,49 @@ export async function GET(request) {
         try {
           const { blobs } = await list({ prefix: 'models/', token });
           if (blobs && blobs.length > 0) {
+            const pathnames = blobs.map(b => b.pathname);
             blobs.forEach((b) => {
               const fileName = path.basename(b.pathname);
+              const ext = path.extname(b.pathname).toLowerCase();
+              const stem = b.pathname.substring(0, b.pathname.length - ext.length);
               const downloadPath = `/api/cad/download?file=${encodeURIComponent(b.pathname)}`;
               const fullDownloadUrl = `${originUrl}${downloadPath}`;
 
-              entries.push({
-                file: b.pathname,
-                name: fileName,
-                sourceKind: 'glb',
-                stepFile: b.pathname,
-                assetFile: b.pathname,
-                url: fullDownloadUrl,
-                outputUrl: fullDownloadUrl,
-                stepUrl: fullDownloadUrl,
-                downloadUrl: fullDownloadUrl,
-                size: b.size
-              });
+              if (ext === '.step' || ext === '.stp') {
+                const matchingGlb = pathnames.find(p => p.toLowerCase() === `${stem.toLowerCase()}.glb`);
+                const glbDownloadUrl = matchingGlb
+                  ? `${originUrl}/api/cad/download?file=${encodeURIComponent(matchingGlb)}`
+                  : fullDownloadUrl;
+
+                entries.push({
+                  file: b.pathname,
+                  name: fileName,
+                  sourceKind: 'step',
+                  stepFile: b.pathname,
+                  assetFile: matchingGlb || b.pathname,
+                  url: glbDownloadUrl,
+                  outputUrl: glbDownloadUrl,
+                  stepUrl: fullDownloadUrl,
+                  downloadUrl: fullDownloadUrl,
+                  size: b.size
+                });
+              } else if (ext === '.glb') {
+                entries.push({
+                  file: b.pathname,
+                  name: fileName,
+                  sourceKind: 'glb',
+                  assetFile: b.pathname,
+                  url: fullDownloadUrl,
+                  outputUrl: fullDownloadUrl,
+                  downloadUrl: fullDownloadUrl,
+                  size: b.size
+                });
+              }
             });
           }
         } catch (blobErr) {
           console.warn('Blob catalog warning:', blobErr);
         }
-      }
-    }
-
-    // 3. Fallback to local uploads
-    if (entries.length === 0) {
-      const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-      if (fs.existsSync(uploadsDir)) {
-        const files = fs.readdirSync(uploadsDir);
-        files.forEach((f) => {
-          const downloadPath = `/api/cad/download?file=${encodeURIComponent(`models/${f}`)}`;
-          const fullDownloadUrl = `${originUrl}${downloadPath}`;
-
-          entries.push({
-            file: `models/${f}`,
-            name: f,
-            sourceKind: 'glb',
-            stepFile: `models/${f}`,
-            assetFile: `models/${f}`,
-            url: fullDownloadUrl,
-            outputUrl: fullDownloadUrl,
-            stepUrl: fullDownloadUrl,
-            downloadUrl: fullDownloadUrl
-          });
-        });
       }
     }
 
