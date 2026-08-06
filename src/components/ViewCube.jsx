@@ -14,7 +14,6 @@ export default function ViewCube({ modelViewerRef, onSelectAngle }) {
       try {
         const orbit = viewer.getCameraOrbit();
         if (!orbit) return;
-        // orbit.theta (rads around Y), orbit.phi (rads from top Y)
         const thetaDeg = (orbit.theta * 180) / Math.PI;
         const phiDeg = (orbit.phi * 180) / Math.PI;
 
@@ -23,7 +22,7 @@ export default function ViewCube({ modelViewerRef, onSelectAngle }) {
 
         setRotation({ rx, ry });
       } catch {
-        // Fallback if getCameraOrbit is initializing
+        // Fallback
       }
     };
 
@@ -41,11 +40,20 @@ export default function ViewCube({ modelViewerRef, onSelectAngle }) {
   };
 
   return (
-    <div className="relative flex flex-col items-center gap-1.5 p-2 bg-white/90 rounded-2xl border border-slate-200/90 shadow-md backdrop-blur-md">
-      {/* 3D CUBE CONTAINER */}
-      <div className="w-16 h-16 relative perspective-400 select-none cursor-pointer">
+    <div className="relative flex flex-col items-center gap-2 p-3 bg-white/95 rounded-2xl border border-slate-200/90 shadow-xl backdrop-blur-md select-none">
+      {/* INVENTOR HOME BUTTON TOP-LEFT */}
+      <button
+        onClick={(e) => handleFaceClick('iso', e)}
+        title="Inventor Home / Isometric View"
+        className="absolute top-2 left-2 z-30 flex h-6 w-6 items-center justify-center rounded-md bg-slate-100 hover:bg-sky-50 hover:text-sky-600 text-slate-600 border border-slate-300 transition-all shadow-2xs active:scale-95"
+      >
+        <Home className="h-3.5 w-3.5" />
+      </button>
+
+      {/* INVENTOR 3D VIEWCUBE CONTAINER */}
+      <div className="w-20 h-20 relative perspective-400 mt-4 mb-1">
         <div
-          className="w-full h-full relative transition-transform duration-100 ease-out"
+          className="w-full h-full relative transition-transform duration-75 ease-out"
           style={{
             transformStyle: 'preserve-3d',
             transform: `rotateX(${rotation.rx}deg) rotateY(${rotation.ry}deg)`,
@@ -54,8 +62,8 @@ export default function ViewCube({ modelViewerRef, onSelectAngle }) {
           {/* FRONT */}
           <div
             onClick={(e) => handleFaceClick('front', e)}
-            className="absolute inset-0 flex items-center justify-center bg-white border border-slate-300 rounded-sm text-[10px] font-extrabold text-slate-700 shadow-2xs hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
-            style={{ transform: 'translateZ(32px)' }}
+            className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-slate-100 to-slate-200 border border-slate-400/90 rounded-xs text-[11px] font-black text-slate-800 shadow-2xs hover:from-sky-100 hover:to-indigo-200 hover:text-sky-950 hover:border-sky-500 transition-all"
+            style={{ transform: 'translateZ(40px)' }}
           >
             FRONT
           </div>
@@ -63,8 +71,8 @@ export default function ViewCube({ modelViewerRef, onSelectAngle }) {
           {/* BACK */}
           <div
             onClick={(e) => handleFaceClick('back', e)}
-            className="absolute inset-0 flex items-center justify-center bg-white border border-slate-300 rounded-sm text-[10px] font-extrabold text-slate-700 shadow-2xs hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
-            style={{ transform: 'rotateY(180deg) translateZ(32px)' }}
+            className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-slate-100 to-slate-200 border border-slate-400/90 rounded-xs text-[11px] font-black text-slate-800 shadow-2xs hover:from-sky-100 hover:to-indigo-200 hover:text-sky-950 hover:border-sky-500 transition-all"
+            style={{ transform: 'rotateY(180deg) translateZ(40px)' }}
           >
             BACK
           </div>
@@ -72,8 +80,8 @@ export default function ViewCube({ modelViewerRef, onSelectAngle }) {
           {/* RIGHT */}
           <div
             onClick={(e) => handleFaceClick('right', e)}
-            className="absolute inset-0 flex items-center justify-center bg-white border border-slate-300 rounded-sm text-[10px] font-extrabold text-slate-700 shadow-2xs hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
-            style={{ transform: 'rotateY(90deg) translateZ(32px)' }}
+            className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-slate-100 to-slate-200 border border-slate-400/90 rounded-xs text-[11px] font-black text-slate-800 shadow-2xs hover:from-sky-100 hover:to-indigo-200 hover:text-sky-950 hover:border-sky-500 transition-all"
+            style={{ transform: 'rotateY(90deg) translateZ(40px)' }}
           >
             RIGHT
           </div>
@@ -81,8 +89,8 @@ export default function ViewCube({ modelViewerRef, onSelectAngle }) {
           {/* LEFT */}
           <div
             onClick={(e) => handleFaceClick('left', e)}
-            className="absolute inset-0 flex items-center justify-center bg-white border border-slate-300 rounded-sm text-[10px] font-extrabold text-slate-700 shadow-2xs hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
-            style={{ transform: 'rotateY(-90deg) translateZ(32px)' }}
+            className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-slate-100 to-slate-200 border border-slate-400/90 rounded-xs text-[11px] font-black text-slate-800 shadow-2xs hover:from-sky-100 hover:to-indigo-200 hover:text-sky-950 hover:border-sky-500 transition-all"
+            style={{ transform: 'rotateY(-90deg) translateZ(40px)' }}
           >
             LEFT
           </div>
@@ -90,8 +98,8 @@ export default function ViewCube({ modelViewerRef, onSelectAngle }) {
           {/* TOP */}
           <div
             onClick={(e) => handleFaceClick('top', e)}
-            className="absolute inset-0 flex items-center justify-center bg-white border border-slate-300 rounded-sm text-[10px] font-extrabold text-slate-700 shadow-2xs hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
-            style={{ transform: 'rotateX(90deg) translateZ(32px)' }}
+            className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-slate-100 to-slate-200 border border-slate-400/90 rounded-xs text-[11px] font-black text-slate-800 shadow-2xs hover:from-sky-100 hover:to-indigo-200 hover:text-sky-950 hover:border-sky-500 transition-all"
+            style={{ transform: 'rotateX(90deg) translateZ(40px)' }}
           >
             TOP
           </div>
@@ -99,23 +107,24 @@ export default function ViewCube({ modelViewerRef, onSelectAngle }) {
           {/* BOTTOM */}
           <div
             onClick={(e) => handleFaceClick('bottom', e)}
-            className="absolute inset-0 flex items-center justify-center bg-white border border-slate-300 rounded-sm text-[10px] font-extrabold text-slate-700 shadow-2xs hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
-            style={{ transform: 'rotateX(-90deg) translateZ(32px)' }}
+            className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-slate-100 to-slate-200 border border-slate-400/90 rounded-xs text-[11px] font-black text-slate-800 shadow-2xs hover:from-sky-100 hover:to-indigo-200 hover:text-sky-950 hover:border-sky-500 transition-all"
+            style={{ transform: 'rotateX(-90deg) translateZ(40px)' }}
           >
             BOTTOM
           </div>
         </div>
       </div>
 
-      {/* ISOMETRIC / HOME SHORTCUT */}
-      <button
-        onClick={(e) => handleFaceClick('iso', e)}
-        title="Isometric / Home View"
-        className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 hover:bg-indigo-50 text-[10px] font-bold text-slate-600 hover:text-indigo-600 transition-colors border border-slate-200"
-      >
-        <Home className="h-3 w-3" />
-        <span>ISO</span>
-      </button>
+      {/* COMPASS DIRECTION RING */}
+      <div className="flex items-center gap-2 text-[9px] font-bold text-slate-400">
+        <span>N</span>
+        <span>•</span>
+        <span>E</span>
+        <span>•</span>
+        <span>S</span>
+        <span>•</span>
+        <span>W</span>
+      </div>
     </div>
   );
 }

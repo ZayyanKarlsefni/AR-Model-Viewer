@@ -24,7 +24,7 @@ function ViewerContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [autoRotate, setAutoRotate] = useState(true);
+  const [autoRotate, setAutoRotate] = useState(false);
   const [logs, setLogs] = useState([]);
   const [showConsole, setShowConsole] = useState(false);
   const [activePreset, setActivePreset] = useState('iso');
@@ -248,7 +248,7 @@ function ViewerContent() {
               exposure="1.05"
               tone-mapping="commerce"
               environment-image="neutral"
-              field-of-view={projectionMode === 'orthographic' ? '0deg' : 'auto'}
+              field-of-view={projectionMode === 'orthographic' ? '12deg' : '50deg'}
               auto-rotate={autoRotate ? 'auto-rotate' : undefined}
               rotation-per-second="18deg"
               interpolation-decay="200"
