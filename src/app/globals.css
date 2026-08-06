@@ -138,6 +138,11 @@ input, textarea, select {
   background: #3730a3;
 }
 
+/* 3D ViewCube utilities */
+.perspective-400 {
+  perspective: 400px;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

@@ -12,6 +12,7 @@ import {
   Eye, Compass, Layers, Sun,
 } from 'lucide-react';
 import { Button, Spinner } from '@/components/ui';
+import ViewCube from '@/components/ViewCube';
 
 function ViewerContent() {
   const searchParams = useSearchParams();
@@ -127,12 +128,31 @@ function ViewerContent() {
   const setCameraAngle = (preset) => {
     setActivePreset(preset);
     if (!modelViewerRef.current) return;
-    if (preset === 'iso') {
-      modelViewerRef.current.cameraOrbit = '45deg 70deg 105%';
-    } else if (preset === 'top') {
-      modelViewerRef.current.cameraOrbit = '0deg 0deg 105%';
-    } else if (preset === 'front') {
-      modelViewerRef.current.cameraOrbit = '0deg 90deg 105%';
+    switch (preset) {
+      case 'iso':
+        modelViewerRef.current.cameraOrbit = '45deg 70deg 105%';
+        break;
+      case 'top':
+        modelViewerRef.current.cameraOrbit = '0deg 0deg 105%';
+        break;
+      case 'bottom':
+        modelViewerRef.current.cameraOrbit = '0deg 180deg 105%';
+        break;
+      case 'front':
+        modelViewerRef.current.cameraOrbit = '0deg 90deg 105%';
+        break;
+      case 'back':
+        modelViewerRef.current.cameraOrbit = '180deg 90deg 105%';
+        break;
+      case 'right':
+        modelViewerRef.current.cameraOrbit = '90deg 90deg 105%';
+        break;
+      case 'left':
+        modelViewerRef.current.cameraOrbit = '-90deg 90deg 105%';
+        break;
+      default:
+        modelViewerRef.current.cameraOrbit = '45deg 70deg 105%';
+        break;
     }
   };
 
@@ -250,12 +270,13 @@ function ViewerContent() {
               </div>
             )}
 
-            {/* FULLSCREEN TOGGLE - TOP RIGHT */}
-            <div className="absolute top-4 right-4 z-10">
+            {/* 3D VIEWCUBE & FULLSCREEN CONTROLS - TOP RIGHT */}
+            <div className="absolute top-4 right-4 z-20 flex flex-col items-end gap-2">
+              <ViewCube modelViewerRef={modelViewerRef} onSelectAngle={setCameraAngle} />
               <button
                 onClick={toggleFullscreen}
                 title="Toggle Fullscreen"
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/90 text-slate-700 border border-slate-200/90 shadow-sm hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/90 text-slate-700 border border-slate-200/90 shadow-sm hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95 backdrop-blur-md"
               >
                 {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
               </button>
@@ -276,28 +297,6 @@ function ViewerContent() {
               </button>
 
               <div className="h-6 w-px bg-slate-200 mx-1" />
-
-              {/* CAMERA PRESET SHORTCUTS */}
-              <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-full border border-slate-200/60">
-                <button
-                  onClick={() => setCameraAngle('iso')}
-                  className={`px-2.5 py-1 text-xs font-semibold rounded-full transition-all ${activePreset === 'iso' ? 'bg-white text-slate-900 shadow-xs border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
-                >
-                  Iso
-                </button>
-                <button
-                  onClick={() => setCameraAngle('top')}
-                  className={`px-2.5 py-1 text-xs font-semibold rounded-full transition-all ${activePreset === 'top' ? 'bg-white text-slate-900 shadow-xs border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
-                >
-                  Top
-                </button>
-                <button
-                  onClick={() => setCameraAngle('front')}
-                  className={`px-2.5 py-1 text-xs font-semibold rounded-full transition-all ${activePreset === 'front' ? 'bg-white text-slate-900 shadow-xs border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
-                >
-                  Front
-                </button>
-              </div>
 
               {/* ROTATE & RESET BUTTONS */}
               <button
