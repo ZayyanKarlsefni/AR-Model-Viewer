@@ -222,9 +222,11 @@ function ViewerContent() {
               ar-modes="webxr scene-viewer quick-look"
               camera-controls
               touch-action="pan-y"
-              shadow-intensity="1.0"
-              shadow-softness="0.8"
-              exposure="1.0"
+              shadow-intensity="1.2"
+              shadow-softness="0.5"
+              exposure="1.05"
+              tone-mapping="commerce"
+              environment-image="neutral"
               auto-rotate={autoRotate ? 'auto-rotate' : undefined}
               rotation-per-second="18deg"
               interpolation-decay="200"
