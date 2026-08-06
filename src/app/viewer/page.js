@@ -153,34 +153,35 @@ function ViewerContent() {
       />
 
       {/* ELEGANT TOP HEADER */}
-      <header className="z-20 flex h-14 w-full items-center justify-between border-b border-slate-200/80 bg-white/90 px-5 backdrop-blur-md shadow-xs">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm">
-            <Box className="h-5 w-5 text-indigo-400" />
+      <header className="z-20 flex h-13 w-full items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-md">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100/80 shadow-2xs">
+            <Box className="h-4 w-4 text-indigo-600" />
           </div>
-          <div>
-            <h1 className="text-base font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-              AR Model <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-600 border border-indigo-200/60">Lite</span>
-            </h1>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold tracking-tight text-slate-900">
+              AR Model
+            </span>
+            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 border border-slate-200/80">
+              Lite
+            </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           {code && (
-            <span className="hidden sm:flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-mono text-slate-600 border border-slate-200">
+            <span className="hidden sm:flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 text-[11px] font-mono text-slate-600 border border-slate-200/80">
               <HardDrive className="h-3.5 w-3.5 text-indigo-500" />
               R2: {code.substring(0, 8)}
             </span>
           )}
-          <Button
-            variant="outline"
-            size="sm"
+          <button
             onClick={() => setShowConsole(!showConsole)}
-            className="text-xs bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700 font-medium"
+            className="flex items-center gap-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 border border-slate-200/80 transition-colors shadow-2xs"
           >
-            <Terminal className="mr-1.5 h-3.5 w-3.5 text-indigo-600" />
-            Logs ({logs.length})
-          </Button>
+            <Terminal className="h-3.5 w-3.5 text-indigo-600" />
+            <span>Logs ({logs.length})</span>
+          </button>
         </div>
       </header>
 
