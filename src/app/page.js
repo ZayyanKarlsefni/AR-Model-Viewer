@@ -1,231 +1,211 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ArrowRight, Box, ShieldCheck } from 'lucide-react';
+import { Button, Input } from '@/components/ui';
 
 export default function Home() {
   const [code, setCode] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
-  const handleOpenModel = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!code.trim()) return;
-    router.push(`/viewer?code=${code.trim()}`);
+    const trimmed = code.trim();
+    if (!trimmed) return;
+    setSubmitting(true);
+    router.push(`/viewer?code=${trimmed}`);
   };
 
   return (
-    <main className="portal-container">
-      {/* Background soft dark aura eclipse */}
-      <div className="portal-bg-aura-top"></div>
+    <main style={styles.page}>
+      <div style={styles.aura} aria-hidden />
 
-      <div className="portal-content">
-        <header className="portal-header">
-          <div className="logo-dot"></div>
-          <h1 className="logo-text">AR Model <span>Lite</span></h1>
-        </header>
+      <header style={styles.header}>
+        <div style={styles.logoRow}>
+          <div style={styles.logoMark}>
+            <Box size={16} strokeWidth={2.5} />
+          </div>
+          <span style={styles.logoText}>CADimago</span>
+        </div>
+      </header>
 
-        <section className="portal-card">
-          <h2>Portal Client AR Model</h2>
-          <p>Masukkan Kode Model (GUID) yang tertera pada lembar gambar kerja Anda untuk membuka visualisasi interaktif 3D & Augmented Reality.</p>
-          
-          <form onSubmit={handleOpenModel} className="portal-form">
-            <input
+      <section style={styles.hero}>
+        <div style={styles.eyebrow}>
+          <ShieldCheck size={13} strokeWidth={2.25} />
+          <span>Client Portal</span>
+        </div>
+        <h1 style={styles.title}>
+          Open 3D models from<br />
+          your working drawings
+        </h1>
+        <p style={styles.subtitle}>
+          Enter the code from your drawing to launch interactive
+          3D and Augmented Reality visualization.
+        </p>
+
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <div style={styles.inputRow}>
+            <Input
               type="text"
-              placeholder="Contoh: b73ce3c0b6fd42bd971714777ea7ef03"
+              placeholder="Example: b73ce3c0b6fd42bd971714777ea7ef03"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="portal-input"
+              style={styles.input}
+              aria-label="Model code"
+              autoComplete="off"
+              spellCheck={false}
             />
-            <button type="submit" className="portal-btn">
-              Buka Model 3D
-            </button>
-          </form>
-        </section>
-      </div>
+            <Button type="submit" size="lg" disabled={!code.trim() || submitting} style={styles.submitBtn}>
+              Open
+              <ArrowRight size={16} strokeWidth={2.5} />
+            </Button>
+          </div>
+          <p style={styles.hint}>32-character alphanumeric code.</p>
+        </form>
+      </section>
 
-      <footer className="portal-footer">
-        <p>© 2026 AR Model Lite. All Rights Reserved.</p>
+      <footer style={styles.footer}>
+        <span>© {new Date().getFullYear()} CADimago</span>
+        <span style={styles.dot}>·</span>
+        <span>CAD &amp; AR Visualization</span>
       </footer>
-
-      <style jsx>{`
-        .portal-container {
-          min-height: 100vh;
-          background: #fcfcfd;
-          color: #334155;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: space-between;
-          font-family: var(--font-jetbrains-mono), monospace;
-          position: relative;
-          overflow: hidden;
-          padding: 2rem;
-          box-sizing: border-box;
-        }
-
-        /* Top soft dark aura */
-        .portal-bg-aura-top {
-          position: absolute;
-          top: -250px;
-          width: 800px;
-          height: 500px;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(15, 23, 42, 0.03) 0%, transparent 70%);
-          filter: blur(40px);
-          pointer-events: none;
-        }
-
-        .portal-content {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          max-width: 480px;
-          width: 100%;
-          z-index: 10;
-          padding: 3rem 0;
-        }
-
-        .portal-header {
-          display: flex;
-          align-items: center;
-          gap: 0.65rem;
-          margin-bottom: 3rem;
-          animation: fadeIn 0.5s ease;
-        }
-
-        .logo-dot {
-          width: 10px;
-          height: 10px;
-          background-color: #0f172a;
-          border-radius: 50%;
-        }
-
-        .logo-text {
-          margin: 0;
-          font-size: 1.6rem;
-          font-weight: 800;
-          letter-spacing: -0.75px;
-          color: #0f172a;
-          font-family: var(--font-jetbrains-mono), monospace;
-        }
-
-        .logo-text span {
-          font-weight: 300;
-          color: #64748b;
-        }
-
-        /* Portal Main Card */
-        .portal-card {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-radius: 28px;
-          padding: 3rem 2.5rem;
-          text-align: center;
-          box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.04);
-          width: 100%;
-          box-sizing: border-box;
-          animation: scaleUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .portal-card h2 {
-          margin: 0 0 0.85rem;
-          font-size: 1.4rem;
-          font-weight: 800;
-          letter-spacing: -0.5px;
-          color: #0f172a;
-          font-family: var(--font-jetbrains-mono), monospace;
-        }
-
-        .portal-card p {
-          margin: 0 0 2.25rem;
-          font-size: 0.925rem;
-          line-height: 1.6;
-          color: #64748b;
-        }
-
-        .portal-form {
-          display: flex;
-          flex-direction: column;
-          gap: 0.95rem;
-        }
-
-        .portal-input {
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          color: #0f172a;
-          padding: 0.95rem 1.25rem;
-          border-radius: 14px;
-          font-size: 0.925rem;
-          font-weight: 500;
-          width: 100%;
-          box-sizing: border-box;
-          transition: all 0.2s ease;
-          text-align: center;
-        }
-
-        .portal-input:focus {
-          outline: none;
-          background: #ffffff;
-          border-color: #0f172a;
-          box-shadow: 0 0 0 1px #0f172a;
-        }
-
-        .portal-input::placeholder {
-          color: #94a3b8;
-        }
-
-        .portal-btn {
-          background: #0f172a;
-          color: #ffffff;
-          border: none;
-          padding: 0.95rem 1.25rem;
-          border-radius: 14px;
-          font-size: 0.925rem;
-          font-weight: 700;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          box-shadow: 0 8px 16px -4px rgba(15, 23, 42, 0.2);
-        }
-
-        .portal-btn:hover {
-          background: #1e293b;
-          transform: translateY(-1px);
-          box-shadow: 0 12px 20px -4px rgba(15, 23, 42, 0.3);
-        }
-
-        .portal-btn:active {
-          transform: translateY(0);
-        }
-
-        .portal-footer {
-          text-align: center;
-          font-size: 0.8rem;
-          color: #94a3b8;
-          z-index: 10;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(4px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes scaleUp {
-          from { transform: scale(0.96); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-
-        @media (max-width: 480px) {
-          .portal-card {
-            padding: 2.25rem 1.75rem;
-            border-radius: 20px;
-          }
-          .portal-header {
-            margin-bottom: 2rem;
-          }
-        }
-      `}</style>
     </main>
   );
 }
+
+const styles = {
+  page: {
+    minHeight: '100vh',
+    background: 'var(--color-bg)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+    padding: '2rem 1.5rem',
+    boxSizing: 'border-box',
+  },
+  aura: {
+    position: 'absolute',
+    top: '-30%',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '900px',
+    height: '600px',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(11, 15, 25, 0.025) 0%, transparent 65%)',
+    filter: 'blur(40px)',
+    pointerEvents: 'none',
+    zIndex: 0,
+  },
+  header: {
+    width: '100%',
+    maxWidth: '520px',
+    zIndex: 1,
+    marginBottom: '4rem',
+  },
+  logoRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.625rem',
+  },
+  logoMark: {
+    width: '28px',
+    height: '28px',
+    borderRadius: '8px',
+    background: 'var(--color-accent)',
+    color: 'var(--color-accent-fg)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoText: {
+    fontSize: '1.0625rem',
+    fontWeight: 700,
+    letterSpacing: '-0.02em',
+    color: 'var(--color-fg)',
+  },
+  logoTag: {
+    fontSize: '0.75rem',
+    fontWeight: 500,
+    color: 'var(--color-fg-subtle)',
+    background: 'var(--color-bg-subtle)',
+    border: '1px solid var(--color-border)',
+    padding: '0.15rem 0.4rem',
+    borderRadius: '5px',
+  },
+  hero: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+    maxWidth: '520px',
+    width: '100%',
+    zIndex: 1,
+    animation: 'hero-in 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+  },
+  eyebrow: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.375rem',
+    fontSize: '0.75rem',
+    fontWeight: 600,
+    color: 'var(--color-fg-muted)',
+    background: 'var(--color-bg-elevated)',
+    border: '1px solid var(--color-border)',
+    padding: '0.3rem 0.7rem',
+    borderRadius: '9999px',
+    marginBottom: '1.75rem',
+  },
+  title: {
+    margin: 0,
+    fontSize: 'clamp(1.75rem, 5vw, 2.375rem)',
+    fontWeight: 700,
+    letterSpacing: '-0.03em',
+    lineHeight: 1.15,
+    color: 'var(--color-fg)',
+  },
+  subtitle: {
+    margin: '1rem 0 2.5rem',
+    fontSize: '0.9375rem',
+    lineHeight: 1.6,
+    color: 'var(--color-fg-muted)',
+    maxWidth: '380px',
+  },
+  form: {
+    width: '100%',
+  },
+  inputRow: {
+    display: 'flex',
+    gap: '0.5rem',
+    width: '100%',
+  },
+  input: {
+    flex: 1,
+    fontFamily: 'var(--font-mono)',
+    fontSize: '0.875rem',
+  },
+  submitBtn: {
+    flexShrink: 0,
+  },
+  hint: {
+    margin: '0.75rem 0 0',
+    fontSize: '0.75rem',
+    color: 'var(--color-fg-subtle)',
+  },
+  footer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.4rem',
+    fontSize: '0.75rem',
+    color: 'var(--color-fg-subtle)',
+    zIndex: 1,
+    marginTop: '4rem',
+  },
+  dot: {
+    color: 'var(--color-border-strong)',
+  },
+};

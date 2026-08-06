@@ -1,12 +1,14 @@
-import { list, put } from '@vercel/blob';
+import { list, put, del } from '@vercel/blob';
 import { NextResponse } from 'next/server';
+import { verifyAdminSession } from '@/lib/auth';
+import { logVisitTurso, listVisitsTurso } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-const FALLBACK_BLOB_TOKEN = 'vercel_blob_rw_dseMKFu73Lcnk2XU_avJhCkA7p8uvfc1R4QvJtEM7GOke5n';
 const LOG_PATHNAME = 'logs/visits.json';
+const MAX_RECORDS = 100;
+const MAX_RETRIES = 3;
 
-// Helper to determine device type from User-Agent string
 function parseDevice(userAgent) {
   if (!userAgent) return 'Unknown Device';
   const ua = userAgent.toLowerCase();
@@ -18,22 +20,38 @@ function parseDevice(userAgent) {
   return 'Mobile / Desktop';
 }
 
-export async function GET() {
+async function readVisits(token) {
+  const { blobs } = await list({ prefix: LOG_PATHNAME, token });
+  if (!blobs || blobs.length === 0) return { visits: [], blobUrl: null };
+  const blob = blobs[0];
   try {
-    const token = process.env.BLOB_READ_WRITE_TOKEN || FALLBACK_BLOB_TOKEN;
-    const { blobs } = await list({ prefix: LOG_PATHNAME, token });
+    const res = await fetch(blob.url);
+    if (!res.ok) return { visits: [], blobUrl: blob.url };
+    const visits = await res.json();
+    return { visits: Array.isArray(visits) ? visits : [], blobUrl: blob.url };
+  } catch {
+    return { visits: [], blobUrl: blob.url };
+  }
+}
 
-    if (blobs && blobs.length > 0) {
-      const res = await fetch(blobs[0].url);
-      if (res.ok) {
-        const visits = await res.json();
-        return NextResponse.json({ visits }, {
-          headers: { 'Cache-Control': 'no-store, max-age=0' }
-        });
-      }
+export async function GET(request) {
+  const authError = verifyAdminSession(request);
+  if (authError) return authError;
+
+  try {
+    const turso = await listVisitsTurso();
+    if (turso) {
+      return NextResponse.json({ visits: turso }, {
+        headers: { 'Cache-Control': 'no-store, max-age=0' }
+      });
     }
 
-    return NextResponse.json({ visits: [] }, {
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+    if (!token) {
+      return NextResponse.json({ error: 'BLOB_READ_WRITE_TOKEN not configured' }, { status: 500 });
+    }
+    const { visits } = await readVisits(token);
+    return NextResponse.json({ visits }, {
       headers: { 'Cache-Control': 'no-store, max-age=0' }
     });
   } catch (error) {
@@ -48,7 +66,11 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing code' }, { status: 400 });
     }
 
-    const token = process.env.BLOB_READ_WRITE_TOKEN || FALLBACK_BLOB_TOKEN;
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+    if (!token) {
+      return NextResponse.json({ error: 'BLOB_READ_WRITE_TOKEN not configured' }, { status: 500 });
+    }
+
     const userAgent = request.headers.get('user-agent') || '';
     const device = parseDevice(userAgent);
 
@@ -59,37 +81,43 @@ export async function POST(request) {
       isAr: !!isAr
     };
 
-    // Retrieve existing logs
-    let visits = [];
-    const { blobs } = await list({ prefix: LOG_PATHNAME, token });
+    // Prefer Turso (concurrency-safe). Fall back to blob JSON log if unavailable.
+    const loggedTurso = await logVisitTurso(code, userAgent, !!isAr).catch(() => false);
+    if (loggedTurso) {
+      return NextResponse.json({ success: true }, {
+        headers: { 'Cache-Control': 'no-store, max-age=0' }
+      });
+    }
 
-    if (blobs && blobs.length > 0) {
+    // Atomic-ish write: retry read-modify-write to mitigate concurrent races
+    let lastError = null;
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        const res = await fetch(blobs[0].url);
-        if (res.ok) {
-          visits = await res.json();
+        const { visits, blobUrl } = await readVisits(token);
+        const next = [newRecord, ...visits].slice(0, MAX_RECORDS);
+
+        // Replace previous blob to avoid duplicates (Vercel Blob has no conditional PUT)
+        if (blobUrl) {
+          await del(blobUrl, { token }).catch(() => {});
         }
-      } catch (e) {
-        // ignore read error
+
+        await put(LOG_PATHNAME, JSON.stringify(next), {
+          access: 'public',
+          addRandomSuffix: false,
+          token
+        });
+
+        return NextResponse.json({ success: true }, {
+          headers: { 'Cache-Control': 'no-store, max-age=0' }
+        });
+      } catch (err) {
+        lastError = err;
+        await new Promise((r) => setTimeout(r, 50 * (attempt + 1)));
       }
     }
 
-    // Append new record to the top, keep max 100 recent records
-    visits.unshift(newRecord);
-    if (visits.length > 100) {
-      visits = visits.slice(0, 100);
-    }
-
-    // Save back to Vercel Blob
-    await put(LOG_PATHNAME, JSON.stringify(visits), {
-      access: 'public',
-      addRandomSuffix: false,
-      token
-    });
-
-    return NextResponse.json({ success: true }, {
-      headers: { 'Cache-Control': 'no-store, max-age=0' }
-    });
+    console.error('Error logging visit after retries:', lastError);
+    return NextResponse.json({ error: lastError?.message || 'Failed to log visit' }, { status: 500 });
   } catch (error) {
     console.error('Error logging visit:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

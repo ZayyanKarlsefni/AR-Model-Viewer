@@ -8,22 +8,12 @@
     <script>
       (function () {
         const root = document.documentElement;
-        const storageKey = "cad-viewer:color-scheme";
-        const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-        let preference = "system";
-        try {
-          const storedPreference = window.localStorage && window.localStorage.getItem(storageKey);
-          if (storedPreference === "light" || storedPreference === "dark" || storedPreference === "system") {
-            preference = storedPreference;
-          }
-        } catch {
-          preference = "system";
-        }
-        const mode = preference === "system" ? (prefersDark ? "dark" : "light") : preference;
-        root.dataset.themePreference = preference;
-        root.dataset.theme = mode;
-        root.classList.toggle("dark", mode === "dark");
-        root.style.colorScheme = mode;
+        // Force light theme to unify with AR Model Lite app shell
+        try { window.localStorage && window.localStorage.setItem("cad-viewer:color-scheme", "light"); } catch {}
+        root.dataset.themePreference = "light";
+        root.dataset.theme = "light";
+        root.classList.remove("dark");
+        root.style.colorScheme = "light";
       })();
 
       // Clean Diagnostic Logging & Interception System (Errors & Warnings Only)
@@ -80,6 +70,7 @@
     <link rel="modulepreload" crossorigin href="./assets/vendor-icons-FFp724MI.js">
     <link rel="modulepreload" crossorigin href="./assets/vendor-three-SYzIooV9.js">
     <link rel="stylesheet" crossorigin href="./assets/index-vRirKMey.css">
+    <link rel="stylesheet" crossorigin href="./theme-overrides.css">
   </head>
   <body>
     <div id="root"></div>

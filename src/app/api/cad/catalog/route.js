@@ -6,8 +6,6 @@ import fs from 'fs';
 
 export const dynamic = 'force-dynamic';
 
-const FALLBACK_BLOB_TOKEN = 'vercel_blob_rw_dseMKFu73Lcnk2XU_avJhCkA7p8uvfc1R4QvJtEM7GOke5n';
-
 export async function GET(request) {
   try {
     const originUrl = request ? new URL(request.url).origin : '';
@@ -100,7 +98,7 @@ export async function GET(request) {
 
     // 2. Fallback to Vercel Blob if R2 had no entries
     if (entries.length === 0) {
-      const token = process.env.BLOB_READ_WRITE_TOKEN || FALLBACK_BLOB_TOKEN;
+      const token = process.env.BLOB_READ_WRITE_TOKEN;
       if (token) {
         try {
           const { blobs } = await list({ prefix: 'models/', token });

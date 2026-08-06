@@ -10,6 +10,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Pre-built CAD viewer bundle (minified, not our source)
+    "public/cad-viewer/assets/**",
+    "public/cad-viewer/index.html",
   ]),
 ]);
 

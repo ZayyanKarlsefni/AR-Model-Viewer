@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server';
 import { uploadCadFile } from '@/lib/r2Storage';
+import { verifyPluginKey, checkContentLength } from '@/lib/plugin-auth';
 import fs from 'fs';
 import path from 'path';
 
 export async function POST(request) {
+  const authError = verifyPluginKey(request);
+  if (authError) return authError;
+
+  const sizeError = checkContentLength(request);
+  if (sizeError) return sizeError;
+
   try {
     const formData = await request.formData();
     const file = formData.get('upload');
@@ -19,7 +26,6 @@ export async function POST(request) {
     const contentType = isStep ? 'application/x-step' : 'model/gltf-binary';
     const ext = isStep ? (fileName.toLowerCase().endsWith('.stp') ? 'stp' : 'step') : 'glb';
 
-    // Upload to Cloudflare R2 / Vercel Blob
     try {
       const result = await uploadCadFile(`${code}.${ext}`, buffer, contentType);
       return NextResponse.json({ success: true, url: result.url, isR2: result.isR2 }, { status: 201 });

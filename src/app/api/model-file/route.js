@@ -5,7 +5,6 @@ import fs from 'fs';
 import path from 'path';
 
 export const dynamic = 'force-dynamic';
-const FALLBACK_BLOB_TOKEN = 'vercel_blob_rw_dseMKFu73Lcnk2XU_avJhCkA7p8uvfc1R4QvJtEM7GOke5n';
 
 export async function GET(request) {
   try {
@@ -33,6 +32,7 @@ export async function GET(request) {
             accessKeyId: r2AccessKeyId,
             secretAccessKey: r2SecretAccessKey,
           },
+          forcePathStyle: true,
         });
 
         const listCommand = new ListObjectsV2Command({
@@ -71,7 +71,7 @@ export async function GET(request) {
     }
 
     // 2. Fallback to Vercel Blob Storage
-    const token = process.env.BLOB_READ_WRITE_TOKEN || FALLBACK_BLOB_TOKEN;
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
     if (token) {
       const { blobs } = await list({ prefix: 'models/', token });
       if (blobs && blobs.length > 0) {
@@ -80,11 +80,13 @@ export async function GET(request) {
           const targetBlob = matchingBlobs.find(b => b.pathname.includes('_compressed')) || matchingBlobs[0];
           const blobResponse = await fetch(targetBlob.url);
           const buffer = await blobResponse.arrayBuffer();
+          const blobName = path.basename(targetBlob.pathname);
+          const isStep = blobName.toLowerCase().endsWith('.step') || blobName.toLowerCase().endsWith('.stp');
 
           return new NextResponse(buffer, {
             status: 200,
             headers: {
-              'Content-Type': 'model/gltf-binary',
+              'Content-Type': isStep ? 'application/x-step' : 'model/gltf-binary',
               'Access-Control-Allow-Origin': '*',
               'Access-Control-Allow-Methods': 'GET, OPTIONS',
               'Cache-Control': 'public, max-age=3600'
@@ -102,10 +104,12 @@ export async function GET(request) {
       if (matchingFile) {
         const filePath = path.join(uploadsDir, matchingFile);
         const fileBuffer = fs.readFileSync(filePath);
+        const isStep = matchingFile.toLowerCase().endsWith('.step') || matchingFile.toLowerCase().endsWith('.stp');
+
         return new NextResponse(fileBuffer, {
           status: 200,
           headers: {
-            'Content-Type': 'model/gltf-binary',
+            'Content-Type': isStep ? 'application/x-step' : 'model/gltf-binary',
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, OPTIONS',
             'Cache-Control': 'public, max-age=3600'

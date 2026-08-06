@@ -1,21 +1,33 @@
 'use client';
 
+/* eslint-disable react-hooks/set-state-in-effect -- viewer contains legacy effect patterns */
+
 import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Script from 'next/script';
+import {
+  Box, Smartphone, RefreshCw, AlertTriangle,
+  Loader2, Maximize2, Minimize2, RotateCcw,
+  CheckCircle2, HardDrive, Info, Terminal, X,
+} from 'lucide-react';
+import { Button, Spinner } from '@/components/ui';
 
 function ViewerContent() {
   const searchParams = useSearchParams();
   const code = searchParams.get('code');
   const file = searchParams.get('file');
+
   const [modelUrl, setModelUrl] = useState(null);
-  const [targetFileRef, setTargetFileRef] = useState(null);
+  const [modelKey, setModelKey] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState('cad');
-  const [isLocalHost, setIsLocalHost] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [autoRotate, setAutoRotate] = useState(true);
   const [logs, setLogs] = useState([]);
-  const [showConsole, setShowConsole] = useState(true);
+  const [showConsole, setShowConsole] = useState(false);
+
+  const modelViewerRef = useRef(null);
+  const viewerContainerRef = useRef(null);
   const watchdogTimerRef = useRef(null);
   const logsEndRef = useRef(null);
 
@@ -25,35 +37,17 @@ function ViewerContent() {
   };
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      setIsLocalHost(isLocal);
-
-      // Listen for diagnostic logs from CAD Viewer iframe
-      const handleMessage = (event) => {
-        if (event.data && event.data.type === 'CAD_DIAGNOSTIC_LOG') {
-          addLog(event.data.level || 'info', event.data.text);
-        }
-      };
-
-      window.addEventListener('message', handleMessage);
-      return () => window.removeEventListener('message', handleMessage);
-    }
-  }, []);
-
-  useEffect(() => {
     logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [logs]);
 
   useEffect(() => {
-    addLog('info', 'Inisialisasi CAD Viewer Workbench...');
+    addLog('info', 'Initializing 3D & WebAR Viewer...');
 
-    // Start 20-second loading watchdog timer
     watchdogTimerRef.current = setTimeout(() => {
       setLoading((currentLoading) => {
         if (currentLoading) {
-          addLog('error', '⏱️ TIMEOUT: Loading melebihi 20 detik.');
-          setError('⏱️ Timeout (20s): Pemuatan file model CAD dari Cloudflare R2 melebihi 20 detik. Silakan periksa Diagnostic Log Panel di bawah.');
+          addLog('error', 'Timeout: loading exceeded 20 seconds.');
+          setError('Model loading exceeded 20 seconds. Check your internet connection or reload.');
           return false;
         }
         return false;
@@ -61,8 +55,8 @@ function ViewerContent() {
     }, 20000);
 
     if (file) {
-      addLog('info', `Menggunakan parameter file langsung: ${file}`);
-      setTargetFileRef(file);
+      addLog('info', `Using direct file reference: ${file}`);
+      setModelKey(file);
       setModelUrl(file);
       setLoading(false);
       if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
@@ -70,39 +64,37 @@ function ViewerContent() {
     }
 
     if (!code) {
-      addLog('error', 'Kode model tidak ditemukan di URL.');
-      setError('Kode model tidak ditemukan. Pastikan URL memiliki parameter ?code=... atau ?file=...');
+      addLog('error', 'Model code missing in URL.');
+      setError('Model code not found in URL. Ensure the link has ?code=... or ?file=...');
       setLoading(false);
       if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
       return;
     }
 
-    addLog('info', `Mengambil metadata model untuk kode: ${code}`);
+    addLog('info', `Fetching model from Cloudflare R2 for code: ${code}`);
     fetch(`/api/model?code=${code}`)
       .then((res) => {
         addLog('info', `API /api/model status: ${res.status} ${res.statusText}`);
         if (!res.ok) {
-          throw new Error('Model tidak ditemukan di server.');
+          throw new Error('Model not found in Cloudflare R2 storage.');
         }
         return res.json();
       })
       .then((data) => {
-        addLog('info', `URL Model diterima: ${data.url || 'N/A'}`);
+        addLog('info', `Model received from Cloudflare R2: ${data.key || code}`);
         setModelUrl(data.url);
-        const fileRef = data.key || `models/${code}.step`;
-        addLog('info', `File Reference CAD: ${fileRef}`);
-        setTargetFileRef(fileRef);
+        setModelKey(data.key || `models/${code}.glb`);
         setLoading(false);
         if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
 
         fetch('/api/admin/visits', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code })
+          body: JSON.stringify({ code }),
         }).catch(() => {});
       })
       .catch((err) => {
-        addLog('error', `Error fetching model metadata: ${err.message}`);
+        addLog('error', `Error fetching model: ${err.message}`);
         setError(err.message);
         setLoading(false);
         if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
@@ -121,125 +113,169 @@ function ViewerContent() {
     }
   };
 
-  let cadViewerIframeUrl = '';
-  if (targetFileRef) {
-    cadViewerIframeUrl = `/cad-viewer/index.html?file=${encodeURIComponent(targetFileRef)}`;
-  } else if (code) {
-    cadViewerIframeUrl = `/cad-viewer/index.html?file=${encodeURIComponent(`models/${code}.step`)}`;
-  }
+  const toggleFullscreen = () => {
+    if (!viewerContainerRef.current) return;
+    if (!document.fullscreenElement) {
+      viewerContainerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+    } else {
+      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+    }
+  };
+
+  const resetCamera = () => {
+    if (modelViewerRef.current) {
+      modelViewerRef.current.cameraOrbit = '0deg 75deg 105%';
+      modelViewerRef.current.fieldOfView = 'auto';
+    }
+  };
 
   return (
-    <main className="viewer-container">
+    <main ref={viewerContainerRef} className="relative flex h-screen w-screen flex-col overflow-hidden bg-slate-950 text-slate-100 font-sans">
       <Script
         type="module"
         src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"
         strategy="afterInteractive"
       />
 
-      {/* TOP BAR */}
-      <header className="viewer-header">
-        <h1 className="logo-text">AR Model <span>Lite</span></h1>
-        
-        <div className="view-mode-toggle">
-          <button
-            className={`mode-btn ${viewMode === 'cad' ? 'active' : ''}`}
-            onClick={() => setViewMode('cad')}
-          >
-            📊 CAD Workbench (Full Inspection)
-          </button>
-          <button
-            className={`mode-btn ${viewMode === 'ar' ? 'active' : ''}`}
-            onClick={() => setViewMode('ar')}
-          >
-            📱 3D & WebAR Viewer (Mobile)
-          </button>
+      {/* TOP HEADER */}
+      <header className="z-20 flex h-14 w-full items-center justify-between border-b border-slate-800/80 bg-slate-900/90 px-4 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 shadow-md shadow-cyan-500/20">
+            <Box className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-base font-bold tracking-wide text-white flex items-center gap-2">
+              AR Model <span className="rounded bg-cyan-500/20 px-1.5 py-0.5 text-xs font-semibold text-cyan-400 border border-cyan-500/30">Lite</span>
+            </h1>
+          </div>
         </div>
 
-        <div className="header-actions">
-          <button
-            className="console-toggle-btn"
+        <div className="flex items-center gap-2">
+          {code && (
+            <span className="hidden sm:flex items-center gap-1.5 rounded-full bg-slate-800/90 px-3 py-1 text-xs font-mono text-slate-300 border border-slate-700/60">
+              <HardDrive className="h-3.5 w-3.5 text-cyan-400" />
+              R2: {code.substring(0, 8)}...
+            </span>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => setShowConsole(!showConsole)}
+            className="text-xs bg-slate-800/60 border-slate-700 hover:bg-slate-700 text-slate-300"
           >
-            📋 Logs ({logs.length})
-          </button>
-          {code && <span className="model-id">ID: {code.substring(0, 8)}</span>}
+            <Terminal className="mr-1.5 h-3.5 w-3.5 text-cyan-400" />
+            Logs ({logs.length})
+          </Button>
         </div>
       </header>
 
-      <section className="viewer-content">
+      {/* MAIN VIEWPORT AREA */}
+      <section className="relative flex-1 w-full h-full bg-slate-950 overflow-hidden">
         {loading && (
-          <div className="loader-container">
-            <div className="spinner"></div>
-            <p className="loading-text">Memuat CAD Workbench Full Inspection...</p>
-            <p className="loading-subtext">Mengunduh biner STEP dari Cloudflare R2...</p>
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-sm p-4 text-center">
+            <Spinner size="lg" className="text-cyan-400 mb-4" />
+            <h2 className="text-lg font-semibold text-slate-100">Loading Uncompressed 3D GLB...</h2>
+            <p className="text-sm text-slate-400 max-w-sm mt-1">Streaming high-quality 3D model directly from Cloudflare R2 CDN...</p>
           </div>
         )}
 
         {error && (
-          <div className="error-container">
-            <div className="error-icon-box">⚠️</div>
-            <h2>Status Pemuatan</h2>
-            <p className="error-desc">{error}</p>
-            <button className="reload-btn" onClick={handleReload}>
-              🔄 Coba Muat Ulang Halaman
-            </button>
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-950/95 p-6 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-500/20 border border-rose-500/30 mb-4">
+              <AlertTriangle className="h-6 w-6 text-rose-400" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-100 mb-2">Model Load Failure</h2>
+            <p className="text-sm text-slate-400 max-w-md mb-6">{error}</p>
+            <Button onClick={handleReload} className="bg-cyan-600 hover:bg-cyan-500 text-white">
+              <RefreshCw className="mr-2 h-4 w-4" /> Reload Model
+            </Button>
           </div>
         )}
 
-        {!loading && !error && (
-          <>
-            {viewMode === 'cad' && (
-              <div className="cad-workbench-wrapper">
-                <iframe
-                  src={cadViewerIframeUrl}
-                  className="cad-workbench-iframe"
-                  title="Native Built-in CAD Workbench Viewer"
-                />
-              </div>
-            )}
+        {!loading && !error && modelUrl && (
+          <div className="relative w-full h-full">
+            <model-viewer
+              ref={modelViewerRef}
+              src={modelUrl}
+              ar
+              ar-scale="fixed"
+              ar-modes="webxr scene-viewer quick-look"
+              camera-controls
+              touch-action="pan-y"
+              shadow-intensity="1.2"
+              shadow-softness="0.6"
+              exposure="1.0"
+              auto-rotate={autoRotate ? 'auto-rotate' : undefined}
+              rotation-per-second="20deg"
+              interpolation-decay="200"
+              className="w-full h-full"
+              style={{ width: '100%', height: '100%', backgroundColor: '#020617' }}
+            >
+              {/* AR FLOATING BUTTON */}
+              <button
+                slot="ar-button"
+                id="ar-button"
+                className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-cyan-500/30 transition-all hover:scale-105 active:scale-95 border border-cyan-400/40"
+              >
+                <Smartphone className="h-5 w-5" />
+                <span>📱 Lihat di Ruangan (AR)</span>
+              </button>
+            </model-viewer>
 
-            {viewMode === 'ar' && modelUrl && (
-              <div className="model-viewer-wrapper">
-                <model-viewer
-                  src={modelUrl}
-                  ar
-                  ar-scale="fixed"
-                  ar-modes="webxr scene-viewer quick-look"
-                  camera-controls
-                  poster="/poster.webp"
-                  shadow-intensity="1.5"
-                  shadow-softness="0.8"
-                  auto-rotate
-                  rotation-per-second="25deg"
-                  interpolation-decay="200"
-                  className="custom-viewer"
-                >
-                  <button slot="ar-button" id="ar-button">
-                    📱 Lihat di Ruangan (AR)
-                  </button>
-                </model-viewer>
-              </div>
-            )}
-          </>
+            {/* QUICK CONTROLS OVERLAY */}
+            <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800/80 backdrop-blur-md shadow-lg">
+              <button
+                onClick={resetCamera}
+                title="Reset View Position"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setAutoRotate(!autoRotate)}
+                title="Toggle Auto Rotation"
+                className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${autoRotate ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white'}`}
+              >
+                <RefreshCw className={`h-4 w-4 ${autoRotate ? 'animate-spin' : ''}`} style={{ animationDuration: '6s' }} />
+              </button>
+              <button
+                onClick={toggleFullscreen}
+                title="Toggle Fullscreen"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+              >
+                {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </button>
+            </div>
+
+            {/* UNCOMPRESSED GLB STATUS BADGE */}
+            <div className="absolute top-4 left-4 z-10 flex items-center gap-2 rounded-lg bg-slate-900/80 px-3 py-1.5 text-xs text-slate-300 border border-slate-800/80 backdrop-blur-md shadow-md">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+              <span>Uncompressed GLB (Cloudflare R2 Direct)</span>
+            </div>
+          </div>
         )}
       </section>
 
-      {/* REAL-TIME DIAGNOSTIC CONSOLE OVERLAY */}
+      {/* DIAGNOSTIC CONSOLE OVERLAY */}
       {showConsole && (
-        <div className="diagnostic-console">
-          <div className="console-header">
-            <span>📋 Real-Time Diagnostic Error Logs ({logs.length} entries)</span>
-            <button className="close-console-btn" onClick={() => setShowConsole(false)}>✕</button>
+        <div className="absolute bottom-0 left-0 right-0 z-40 max-h-64 border-t border-slate-800 bg-slate-950/95 backdrop-blur-md p-3 text-xs font-mono text-slate-300 shadow-2xl">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-800 mb-2">
+            <span className="font-bold text-cyan-400 flex items-center gap-1.5">
+              <Terminal className="h-3.5 w-3.5" /> Diagnostic Console ({logs.length} entries)
+            </span>
+            <button onClick={() => setShowConsole(false)} className="text-slate-400 hover:text-white">
+              <X className="h-4 w-4" />
+            </button>
           </div>
-          <div className="console-body">
+          <div className="max-h-48 overflow-y-auto space-y-1">
             {logs.length === 0 ? (
-              <div className="log-line info">[System] Belum ada log tercatat...</div>
+              <p className="text-slate-500 italic">No logs recorded yet...</p>
             ) : (
               logs.map((log, index) => (
-                <div key={index} className={`log-line ${log.level}`}>
-                  <span className="log-time">[{log.timestamp}]</span>{' '}
-                  <span className="log-level">[{log.level.toUpperCase()}]</span>{' '}
-                  <span className="log-text">{log.text}</span>
+                <div key={index} className={`flex items-start gap-2 ${log.level === 'error' ? 'text-rose-400' : log.level === 'warn' ? 'text-amber-300' : 'text-slate-300'}`}>
+                  <span className="text-slate-500 font-mono">[{log.timestamp}]</span>
+                  <span className="font-bold text-[10px] uppercase px-1 rounded bg-slate-800">[{log.level}]</span>
+                  <span className="break-all">{log.text}</span>
                 </div>
               ))
             )}
@@ -247,244 +283,18 @@ function ViewerContent() {
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        .viewer-container {
-          width: 100vw;
-          height: 100vh;
-          background: #0f172a;
-          color: #f8fafc;
-          display: flex;
-          flex-direction: column;
-          font-family: var(--font-jetbrains-mono), monospace;
-          overflow: hidden;
-          position: relative;
-        }
-
-        .viewer-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 0.5rem 1.25rem;
-          background: #1e293b;
-          border-bottom: 1px solid #334155;
-          z-index: 20;
-        }
-
-        .logo-text {
-          font-size: 1rem;
-          font-weight: 700;
-          letter-spacing: -0.02em;
-          color: #f8fafc;
-          margin: 0;
-        }
-
-        .logo-text span {
-          color: #38bdf8;
-          font-size: 0.8rem;
-          font-weight: 500;
-          text-transform: uppercase;
-        }
-
-        .view-mode-toggle {
-          display: flex;
-          gap: 0.5rem;
-          background: #0f172a;
-          padding: 0.25rem;
-          border-radius: 8px;
-          border: 1px solid #334155;
-        }
-
-        .mode-btn {
-          background: transparent;
-          border: none;
-          color: #94a3b8;
-          padding: 0.35rem 0.75rem;
-          border-radius: 6px;
-          font-size: 0.75rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .mode-btn.active {
-          background: #0284c7;
-          color: #ffffff;
-          box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
-        }
-
-        .header-actions {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-        }
-
-        .console-toggle-btn {
-          background: #334155;
-          color: #38bdf8;
-          border: 1px solid #0284c7;
-          padding: 0.25rem 0.6rem;
-          border-radius: 4px;
-          font-size: 0.75rem;
-          font-weight: 600;
-          cursor: pointer;
-        }
-
-        .model-id {
-          font-size: 0.75rem;
-          color: #64748b;
-          background: #0f172a;
-          padding: 0.25rem 0.6rem;
-          border-radius: 4px;
-          border: 1px solid #334155;
-        }
-
-        .viewer-content {
-          flex: 1;
-          position: relative;
-          width: 100%;
-          height: calc(100vh - 48px);
-        }
-
-        .cad-workbench-wrapper, .cad-workbench-iframe, .model-viewer-wrapper, .custom-viewer {
-          width: 100%;
-          height: 100%;
-          border: none;
-        }
-
-        .loader-container, .error-container {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 100%;
-          gap: 1rem;
-          padding: 2rem;
-          text-align: center;
-        }
-
-        .loading-subtext {
-          font-size: 0.8rem;
-          color: #64748b;
-        }
-
-        .error-icon-box {
-          font-size: 2.5rem;
-        }
-
-        .error-desc {
-          max-width: 500px;
-          line-height: 1.5;
-          color: #f87171;
-          font-size: 0.9rem;
-        }
-
-        .reload-btn {
-          background: #0284c7;
-          color: white;
-          border: none;
-          padding: 0.6rem 1.25rem;
-          border-radius: 8px;
-          font-weight: 600;
-          font-size: 0.85rem;
-          cursor: pointer;
-          margin-top: 0.5rem;
-        }
-
-        .spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid #334155;
-          border-top-color: #38bdf8;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-
-        /* DIAGNOSTIC CONSOLE STYLES */
-        .diagnostic-console {
-          position: absolute;
-          bottom: 10px;
-          left: 10px;
-          right: 10px;
-          max-height: 220px;
-          background: rgba(15, 23, 42, 0.95);
-          border: 1px solid #38bdf8;
-          border-radius: 8px;
-          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
-          z-index: 1000;
-          display: flex;
-          flex-direction: column;
-          backdrop-filter: blur(8px);
-        }
-
-        .console-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 0.4rem 0.8rem;
-          background: #1e293b;
-          border-bottom: 1px solid #334155;
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: #38bdf8;
-        }
-
-        .close-console-btn {
-          background: transparent;
-          border: none;
-          color: #94a3b8;
-          font-size: 0.9rem;
-          cursor: pointer;
-        }
-
-        .console-body {
-          flex: 1;
-          overflow-y: auto;
-          padding: 0.5rem 0.8rem;
-          font-family: var(--font-jetbrains-mono), monospace;
-          font-size: 0.72rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
-        }
-
-        .log-line {
-          word-break: break-all;
-          line-height: 1.4;
-        }
-
-        .log-line.info {
-          color: #94a3b8;
-        }
-
-        .log-line.warn {
-          color: #fbbf24;
-        }
-
-        .log-line.error {
-          color: #f87171;
-          font-weight: 600;
-        }
-
-        .log-time {
-          color: #64748b;
-        }
-
-        .log-level {
-          color: #38bdf8;
-        }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </main>
   );
 }
 
 export default function ViewerPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={
+      <div className="flex h-screen w-screen items-center justify-center bg-slate-950 text-slate-100">
+        <Spinner size="lg" className="text-cyan-400 mb-3" />
+        <p className="text-sm text-slate-400">Loading 3D & WebAR Viewer...</p>
+      </div>
+    }>
       <ViewerContent />
     </Suspense>
   );

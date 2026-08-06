@@ -1,0 +1,70 @@
+/* AR Model Lite — CAD Viewer theme overrides (force light, unify with app) */
+/* Loaded after bundle CSS to override shadcn-style variables */
+
+:root,
+:root.host,
+:root[data-theme="dark"],
+:root[data-theme="light"],
+html.dark,
+html[data-theme="dark"] {
+  --background: #fbfbfd !important;
+  --foreground: #0b0f19 !important;
+  --card: #ffffff !important;
+  --card-foreground: #0b0f19 !important;
+  --popover: #ffffff !important;
+  --popover-foreground: #0b0f19 !important;
+  --primary: #0b0f19 !important;
+  --primary-foreground: #ffffff !important;
+  --secondary: #f5f6f8 !important;
+  --secondary-foreground: #0b0f19 !important;
+  --muted: #f5f6f8 !important;
+  --muted-foreground: #5b6478 !important;
+  --accent: #f0f1f4 !important;
+  --accent-foreground: #0b0f19 !important;
+  --destructive: #d12d2d !important;
+  --border: #e6e8ee !important;
+  --input: #e6e8ee !important;
+  --ring: #0b0f19 !important;
+  --radius: 0.625rem !important;
+  color-scheme: light !important;
+}
+
+html,
+html.dark {
+  background: #fbfbfd !important;
+  color: #0b0f19 !important;
+  color-scheme: light !important;
+}
+
+html.dark { background: #fbfbfd !important; }
+
+body,
+#root {
+  background: #fbfbfd !important;
+  color: #0b0f19 !important;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif !important;
+}
+
+/* Buttons, inputs, panels — soften to match app */
+button,
+input,
+select,
+textarea {
+  font-family: inherit !important;
+}
+
+/* Scrollbar — match app */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #d2d6df;
+  border-radius: 9999px;
+  border: 2px solid #fbfbfd;
+}
+::-webkit-scrollbar-thumb:hover { background: #8a93a6; }
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid #0b0f19;
+  outline-offset: 2px;
+}

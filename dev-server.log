@@ -1,0 +1,31 @@
+
+> webviewer@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.10 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.131.227.185:3000
+- Environments: .env.local
+✓ Ready in 721ms
+
+ GET / 200 in 327ms (next.js: 182ms, application-code: 146ms)
+ GET /viewer?code=test 200 in 79ms (next.js: 30ms, application-code: 48ms)
+ GET / 200 in 70ms (next.js: 8ms, application-code: 62ms)
+ GET /admin/login 200 in 143ms (next.js: 59ms, proxy.ts: 7ms, application-code: 76ms)
+ GET /api/admin/me 200 in 98ms (next.js: 72ms, proxy.ts: 7ms, application-code: 20ms)
+  Reload env: .env.local
+ GET / 200 in 231ms (next.js: 99ms, application-code: 132ms)
+ GET /admin/login 200 in 235ms (next.js: 16ms, proxy.ts: 186ms, application-code: 33ms)
+ GET / 200 in 210ms (next.js: 82ms, application-code: 128ms)
+ GET /admin/login 200 in 213ms (next.js: 21ms, proxy.ts: 149ms, application-code: 43ms)
+ GET /admin/login 200 in 99ms (next.js: 6ms, proxy.ts: 5ms, application-code: 88ms)
+ GET /api/admin/me 200 in 40ms (next.js: 24ms, proxy.ts: 7ms, application-code: 9ms)
+ POST /api/admin/login 200 in 66ms (next.js: 46ms, proxy.ts: 7ms, application-code: 12ms)
+ GET /admin 200 in 101ms (next.js: 36ms, proxy.ts: 11ms, application-code: 53ms)
+ GET /api/admin/me 200 in 33ms (next.js: 8ms, proxy.ts: 13ms, application-code: 12ms)
+ GET /api/admin/visits 200 in 897ms (next.js: 339ms, proxy.ts: 9ms, application-code: 549ms)
+ GET /api/admin/blobs 200 in 903ms (next.js: 275ms, proxy.ts: 10ms, application-code: 618ms)
+ GET /admin 200 in 150ms (next.js: 23ms, proxy.ts: 34ms, application-code: 94ms)
+ GET /api/admin/me 200 in 28ms (next.js: 7ms, proxy.ts: 10ms, application-code: 11ms)
+ GET /api/admin/blobs 200 in 634ms (next.js: 9ms, proxy.ts: 10ms, application-code: 615ms)
+ GET /api/admin/visits 200 in 1896ms (next.js: 29ms, proxy.ts: 10ms, application-code: 1857ms)

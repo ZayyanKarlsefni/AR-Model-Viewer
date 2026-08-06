@@ -1,17 +1,19 @@
 import { S3Client, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
-import { list } from '@vercel/blob';
 import { NextResponse } from 'next/server';
+import { verifySession } from '@/lib/auth';
 import fs from 'fs';
 import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
-const FALLBACK_BLOB_TOKEN = 'vercel_blob_rw_dseMKFu73Lcnk2XU_avJhCkA7p8uvfc1R4QvJtEM7GOke5n';
+function isStepKey(key) {
+  return key.toLowerCase().endsWith('.step') || key.toLowerCase().endsWith('.stp');
+}
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const file = searchParams.get('file') || searchParams.get('path') || searchParams.get('code');
+    const file = searchParams.get('file') || searchParams.get('path') || searchParams.get('code') || searchParams.get('key');
 
     if (!file) {
       return NextResponse.json({ error: 'Missing file parameter' }, { status: 400 });
@@ -20,7 +22,19 @@ export async function GET(request) {
     const rawFile = file.trim();
     const cleanFile = rawFile.replace(/^models\//i, '').toLowerCase();
 
-    // 1. Fetch from Cloudflare R2
+    // STEP files hold confidential CAD history/parameters -> require internal auth.
+    if (isStepKey(cleanFile)) {
+      const cookieToken = request.cookies?.get('admin_session')?.value;
+      const paramToken = searchParams.get('token');
+      if (!verifySession(cookieToken || paramToken)) {
+        return NextResponse.json(
+          { error: 'Access Denied: Internal CAD files require authorization' },
+          { status: 403 }
+        );
+      }
+    }
+
+    // 1. Fetch uncompressed GLB / STEP directly from Cloudflare R2
     const r2AccountAccountId = process.env.R2_ACCOUNT_ID;
     const r2AccessKeyId = process.env.R2_ACCESS_KEY_ID;
     const r2SecretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
@@ -53,7 +67,7 @@ export async function GET(request) {
             });
             const objectData = await s3Client.send(getCommand);
             const byteArray = await objectData.Body.transformToByteArray();
-            const isStep = targetKey.toLowerCase().endsWith('.step') || targetKey.toLowerCase().endsWith('.stp');
+            const isStep = isStepKey(targetKey);
             const contentType = isStep ? 'application/x-step' : 'model/gltf-binary';
             const fileName = path.basename(targetKey);
 
@@ -93,7 +107,7 @@ export async function GET(request) {
 
             const objectData = await s3Client.send(getCommand);
             const byteArray = await objectData.Body.transformToByteArray();
-            const isStep = matchingObj.Key.toLowerCase().endsWith('.step') || matchingObj.Key.toLowerCase().endsWith('.stp');
+            const isStep = isStepKey(matchingObj.Key);
             const contentType = isStep ? 'application/x-step' : 'model/gltf-binary';
             const fileName = path.basename(matchingObj.Key);
 
@@ -114,37 +128,7 @@ export async function GET(request) {
       }
     }
 
-    // 2. Fallback to Vercel Blob
-    const token = process.env.BLOB_READ_WRITE_TOKEN || FALLBACK_BLOB_TOKEN;
-    if (token) {
-      const { blobs } = await list({ prefix: 'models/', token });
-      if (blobs && blobs.length > 0) {
-        const matchingBlob = blobs.find(b => 
-          b.pathname.toLowerCase() === rawFile.toLowerCase() ||
-          b.pathname.toLowerCase().includes(cleanFile)
-        );
-
-        if (matchingBlob) {
-          const blobResponse = await fetch(matchingBlob.url);
-          const buffer = await blobResponse.arrayBuffer();
-          const fileName = path.basename(matchingBlob.pathname);
-          const isStep = fileName.toLowerCase().endsWith('.step') || fileName.toLowerCase().endsWith('.stp');
-
-          return new NextResponse(buffer, {
-            status: 200,
-            headers: {
-              'Content-Type': isStep ? 'application/x-step' : 'model/gltf-binary',
-              'Content-Disposition': `inline; filename="${fileName}"`,
-              'Access-Control-Allow-Origin': '*',
-              'Access-Control-Allow-Methods': 'GET, OPTIONS',
-              'Cache-Control': 'public, max-age=3600'
-            }
-          });
-        }
-      }
-    }
-
-    // 3. Fallback to local files
+    // 2. Development Mode: Local Filesystem Fallback
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
     if (fs.existsSync(uploadsDir)) {
       const files = fs.readdirSync(uploadsDir);
@@ -152,7 +136,7 @@ export async function GET(request) {
       if (matchingFile) {
         const filePath = path.join(uploadsDir, matchingFile);
         const fileBuffer = fs.readFileSync(filePath);
-        const isStep = matchingFile.toLowerCase().endsWith('.step') || matchingFile.toLowerCase().endsWith('.stp');
+        const isStep = isStepKey(matchingFile);
 
         return new NextResponse(fileBuffer, {
           status: 200,
@@ -167,7 +151,7 @@ export async function GET(request) {
       }
     }
 
-    return NextResponse.json({ error: 'File asset not found' }, { status: 404 });
+    return NextResponse.json({ error: 'File asset not found in Cloudflare R2' }, { status: 404 });
   } catch (error) {
     console.error('Error downloading file asset:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

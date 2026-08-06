@@ -1,12 +1,9 @@
 import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3';
-import { list } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
 export const dynamic = 'force-dynamic';
-
-const FALLBACK_BLOB_TOKEN = 'vercel_blob_rw_dseMKFu73Lcnk2XU_avJhCkA7p8uvfc1R4QvJtEM7GOke5n';
 
 export async function GET(request) {
   try {
@@ -19,7 +16,7 @@ export async function GET(request) {
 
     const cleanCode = code.trim().toLowerCase();
 
-    // 1. Check Cloudflare R2 Storage First (10 GB Free Storage)
+    // 1. Fetch uncompressed GLB model directly from Cloudflare R2
     const r2AccountAccountId = process.env.R2_ACCOUNT_ID;
     const r2AccessKeyId = process.env.R2_ACCESS_KEY_ID;
     const r2SecretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
@@ -44,7 +41,6 @@ export async function GET(request) {
 
         const r2Data = await s3Client.send(command);
         if (r2Data.Contents && r2Data.Contents.length > 0) {
-          // Prefer .glb file if both exist, otherwise use .step
           const matchingObjs = r2Data.Contents.filter(item => item.Key.toLowerCase().includes(cleanCode));
           if (matchingObjs.length > 0) {
             const matchingGlb = matchingObjs.find(item => item.Key.toLowerCase().endsWith('.glb'));
@@ -62,26 +58,7 @@ export async function GET(request) {
       }
     }
 
-    // 2. Fallback to Vercel Blob Storage
-    const token = process.env.BLOB_READ_WRITE_TOKEN || FALLBACK_BLOB_TOKEN;
-    if (token) {
-      const { blobs } = await list({ 
-        prefix: 'models/',
-        token: token
-      });
-      
-      if (blobs && blobs.length > 0) {
-        const matchingBlobs = blobs.filter(b => b.pathname.toLowerCase().includes(cleanCode));
-        if (matchingBlobs.length > 0) {
-          const targetBlob = matchingBlobs.find(b => b.pathname.toLowerCase().endsWith('.glb')) || matchingBlobs[0];
-          return NextResponse.json({ url: targetBlob.url, storage: 'vercel-blob', key: targetBlob.pathname }, {
-            headers: { 'Cache-Control': 'no-store, max-age=0' }
-          });
-        }
-      }
-    }
-
-    // 3. Development Mode: Local Filesystem Fallback
+    // 2. Development Mode: Local Filesystem Fallback
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
     if (fs.existsSync(uploadsDir)) {
       const files = fs.readdirSync(uploadsDir);
@@ -93,7 +70,7 @@ export async function GET(request) {
       }
     }
 
-    return NextResponse.json({ error: 'Model not found in any storage' }, { 
+    return NextResponse.json({ error: 'Model not found in Cloudflare R2 storage' }, { 
       status: 404,
       headers: { 'Cache-Control': 'no-store, max-age=0' }
     });
