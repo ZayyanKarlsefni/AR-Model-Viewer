@@ -144,6 +144,8 @@ function ViewerContent() {
     }
   };
 
+  const isDebug = searchParams.get('debug') === 'true' || searchParams.get('admin') === 'true';
+
   return (
     <main ref={viewerContainerRef} className="relative flex h-screen w-screen flex-col overflow-hidden bg-slate-50 text-slate-900 font-sans">
       <Script
@@ -168,21 +170,23 @@ function ViewerContent() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {code && (
-            <span className="hidden sm:flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 text-[11px] font-mono text-slate-600 border border-slate-200/80">
-              <HardDrive className="h-3.5 w-3.5 text-indigo-500" />
-              R2: {code.substring(0, 8)}
-            </span>
-          )}
-          <button
-            onClick={() => setShowConsole(!showConsole)}
-            className="flex items-center gap-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 border border-slate-200/80 transition-colors shadow-2xs"
-          >
-            <Terminal className="h-3.5 w-3.5 text-indigo-600" />
-            <span>Logs ({logs.length})</span>
-          </button>
-        </div>
+        {isDebug && (
+          <div className="flex items-center gap-2">
+            {code && (
+              <span className="hidden sm:flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 text-[11px] font-mono text-slate-600 border border-slate-200/80">
+                <HardDrive className="h-3.5 w-3.5 text-indigo-500" />
+                R2: {code.substring(0, 8)}
+              </span>
+            )}
+            <button
+              onClick={() => setShowConsole(!showConsole)}
+              className="flex items-center gap-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 border border-slate-200/80 transition-colors shadow-2xs"
+            >
+              <Terminal className="h-3.5 w-3.5 text-indigo-600" />
+              <span>Logs ({logs.length})</span>
+            </button>
+          </div>
+        )}
       </header>
 
       {/* STUDIO 3D CANVAS */}
@@ -190,8 +194,8 @@ function ViewerContent() {
         {loading && (
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-white/90 backdrop-blur-md p-4 text-center">
             <Spinner size="lg" className="text-indigo-600 mb-4" />
-            <h2 className="text-lg font-bold text-slate-900">Loading 3D Studio Model...</h2>
-            <p className="text-sm text-slate-500 max-w-sm mt-1">Streaming uncompressed GLB directly from Cloudflare R2 CDN...</p>
+            <h2 className="text-lg font-bold text-slate-900">Loading 3D Model...</h2>
+            <p className="text-sm text-slate-500 max-w-sm mt-1">Preparing high quality interactive 3D model...</p>
           </div>
         )}
 
@@ -236,11 +240,13 @@ function ViewerContent() {
               />
             </model-viewer>
 
-            {/* UNCOMPRESSED GLB BADGE - TOP LEFT */}
-            <div className="absolute top-4 left-4 z-10 flex items-center gap-2 rounded-full bg-white/90 px-3.5 py-1.5 text-xs font-semibold text-slate-700 border border-slate-200/90 shadow-sm backdrop-blur-md">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-              <span>Uncompressed GLB (Cloudflare R2 Direct)</span>
-            </div>
+            {/* UNCOMPRESSED GLB BADGE - ONLY IN DEBUG MODE */}
+            {isDebug && (
+              <div className="absolute top-4 left-4 z-10 flex items-center gap-2 rounded-full bg-white/90 px-3.5 py-1.5 text-xs font-semibold text-slate-700 border border-slate-200/90 shadow-sm backdrop-blur-md">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                <span>Uncompressed GLB (Cloudflare R2 Direct)</span>
+              </div>
+            )}
 
             {/* FULLSCREEN TOGGLE - TOP RIGHT */}
             <div className="absolute top-4 right-4 z-10">
