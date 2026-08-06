@@ -248,7 +248,11 @@ function ViewerContent() {
               exposure="1.05"
               tone-mapping="commerce"
               environment-image="neutral"
-              field-of-view={projectionMode === 'orthographic' ? '12deg' : '50deg'}
+              min-camera-orbit="auto auto 5%"
+              max-camera-orbit="auto auto 600%"
+              min-field-of-view="1deg"
+              max-field-of-view="140deg"
+              field-of-view={projectionMode === 'orthographic' ? '12deg' : 'auto'}
               auto-rotate={autoRotate ? 'auto-rotate' : undefined}
               rotation-per-second="18deg"
               interpolation-decay="200"
