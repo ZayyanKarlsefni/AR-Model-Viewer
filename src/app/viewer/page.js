@@ -28,6 +28,7 @@ function ViewerContent() {
   const [logs, setLogs] = useState([]);
   const [showConsole, setShowConsole] = useState(false);
   const [activePreset, setActivePreset] = useState('iso');
+  const [projectionMode, setProjectionMode] = useState('perspective');
 
   const modelViewerRef = useRef(null);
   const viewerContainerRef = useRef(null);
@@ -247,6 +248,7 @@ function ViewerContent() {
               exposure="1.05"
               tone-mapping="commerce"
               environment-image="neutral"
+              field-of-view={projectionMode === 'orthographic' ? '0deg' : 'auto'}
               auto-rotate={autoRotate ? 'auto-rotate' : undefined}
               rotation-per-second="18deg"
               interpolation-decay="200"
@@ -295,6 +297,28 @@ function ViewerContent() {
                 <Smartphone className="h-4 w-4" />
                 <span>Lihat di Ruangan (AR)</span>
               </button>
+
+              <div className="h-6 w-px bg-slate-200 mx-1" />
+
+              {/* PROJECTION MODE TOGGLE (PERSPECTIVE VS ORTHOGRAPHIC) */}
+              <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-full border border-slate-200/60">
+                <button
+                  onClick={() => setProjectionMode('perspective')}
+                  title="Perspective Projection (Natural Eye View)"
+                  className={`flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full transition-all ${projectionMode === 'perspective' ? 'bg-white text-slate-900 shadow-xs border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  <span>Perspective</span>
+                </button>
+                <button
+                  onClick={() => setProjectionMode('orthographic')}
+                  title="Orthographic Projection (True Parallel CAD Inspection)"
+                  className={`flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full transition-all ${projectionMode === 'orthographic' ? 'bg-white text-slate-900 shadow-xs border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
+                >
+                  <Compass className="h-3.5 w-3.5" />
+                  <span>Orthographic</span>
+                </button>
+              </div>
 
               <div className="h-6 w-px bg-slate-200 mx-1" />
 
