@@ -1,30 +1,30 @@
 @import "tailwindcss";
 
 @theme {
-  /* Color system — light minimal professional */
-  --color-bg: #fbfbfd;
+  /* Color system — light minimal professional studio */
+  --color-bg: #f8fafc;
   --color-bg-elevated: #ffffff;
-  --color-bg-subtle: #f5f6f8;
-  --color-fg: #0b0f19;
-  --color-fg-muted: #5b6478;
-  --color-fg-subtle: #8a93a6;
-  --color-border: #e6e8ee;
-  --color-border-strong: #d2d6df;
-  --color-accent: #0b0f19;
+  --color-bg-subtle: #f1f5f9;
+  --color-fg: #0f172a;
+  --color-fg-muted: #475569;
+  --color-fg-subtle: #64748b;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+  --color-accent: #4f46e5;
   --color-accent-fg: #ffffff;
-  --color-accent-muted: #f0f1f4;
-  --color-danger: #d12d2d;
+  --color-accent-muted: #e0e7ff;
+  --color-danger: #dc2626;
   --color-danger-bg: #fef2f2;
   --color-danger-border: #fecaca;
-  --color-success: #157f3d;
-  --color-success-bg: #ecfdf3;
+  --color-success: #16a34a;
+  --color-success-bg: #f0fdf4;
   --color-success-border: #bbf7d0;
-  --color-warning: #b45309;
+  --color-warning: #d97706;
   --color-warning-bg: #fffbeb;
   --color-warning-border: #fde68a;
-  --color-info: #1d4ed8;
-  --color-info-bg: #eff6ff;
-  --color-info-border: #bfdbfe;
+  --color-info: #0284c7;
+  --color-info-bg: #f0f9ff;
+  --color-info-border: #bae6fd;
 
   /* Typography */
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -37,12 +37,12 @@
   --radius-xl: 20px;
   --radius-2xl: 28px;
 
-  /* Shadow scale — subtle */
-  --shadow-xs: 0 1px 2px 0 rgba(11, 15, 25, 0.04);
-  --shadow-sm: 0 2px 4px -1px rgba(11, 15, 25, 0.05), 0 1px 2px -1px rgba(11, 15, 25, 0.03);
-  --shadow-md: 0 6px 12px -4px rgba(11, 15, 25, 0.06), 0 2px 4px -2px rgba(11, 15, 25, 0.04);
-  --shadow-lg: 0 16px 32px -12px rgba(11, 15, 25, 0.08), 0 4px 8px -4px rgba(11, 15, 25, 0.04);
-  --shadow-focus: 0 0 0 3px rgba(11, 15, 25, 0.08);
+  /* Shadow scale — clean studio shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.03);
+  --shadow-sm: 0 2px 4px -1px rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02);
+  --shadow-md: 0 6px 16px -4px rgba(15, 23, 42, 0.08), 0 2px 6px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 20px 40px -12px rgba(15, 23, 42, 0.12), 0 4px 12px -4px rgba(15, 23, 42, 0.04);
+  --shadow-focus: 0 0 0 3px rgba(79, 70, 229, 0.15);
 }
 
 :root {
@@ -105,19 +105,37 @@ input, textarea, select {
 
 /* Scrollbar — subtle */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border-strong);
+  background: #cbd5e1;
   border-radius: 9999px;
-  border: 2px solid var(--color-bg);
+  border: 2px solid #f8fafc;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-fg-subtle);
+  background: #94a3b8;
+}
+
+/* Custom <model-viewer> AR Button slot */
+#ar-button {
+  background: #4f46e5;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4), 0 4px 10px -2px rgba(79, 70, 229, 0.2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#ar-button:hover {
+  background: #4338ca;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px -5px rgba(79, 70, 229, 0.5), 0 6px 12px -2px rgba(79, 70, 229, 0.3);
+}
+#ar-button:active {
+  transform: translateY(0);
+  background: #3730a3;
 }
 
 /* Reduced motion */
