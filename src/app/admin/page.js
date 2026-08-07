@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import {
@@ -47,6 +47,8 @@ export default function AdminPage() {
   const [tab, setTab] = useState('models');
   const [deleteTarget, setDeleteTarget] = useState(null);
 
+  const [redirecting, setRedirecting] = useState(false);
+
   const fetchModels = async function () {
     setLoading(true);
     try {
@@ -81,11 +83,19 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    fetch('/api/admin/me', { cache: 'no-store' })
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      setRedirecting(true);
+      window.location.replace('/admin/login');
+    }, 6000);
+
+    fetch('/api/admin/me', { cache: 'no-store', signal: controller.signal })
       .then((r) => r.json())
       .then((data) => {
+        clearTimeout(timeoutId);
         if (!data.authenticated) {
-          window.location.href = '/admin/login';
+          setRedirecting(true);
+          window.location.replace('/admin/login');
           return;
         }
         setAuthChecked(true);
@@ -93,8 +103,12 @@ export default function AdminPage() {
         fetchVisits();
       })
       .catch(() => {
-        window.location.href = '/admin/login';
+        clearTimeout(timeoutId);
+        setRedirecting(true);
+        window.location.replace('/admin/login');
       });
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   const handleRefresh = async () => {
@@ -153,9 +167,16 @@ export default function AdminPage() {
 
   if (!authChecked) {
     return (
-      <main style={{ minHeight: '100vh', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
+      <main style={{ minHeight: '100vh', background: 'var(--color-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
         <Spinner size={16} />
-        <span style={{ color: 'var(--color-fg-subtle)', fontSize: '0.85rem' }}>Loading dashboard...</span>
+        <span style={{ color: 'var(--color-fg-subtle)', fontSize: '0.85rem' }}>
+          {redirecting ? 'Mengarahkan ke halaman login...' : 'Memuat dashboard admin...'}
+        </span>
+        {redirecting && (
+          <a href="/admin/login" style={{ fontSize: '0.8rem', color: '#4F46E5', textDecoration: 'underline' }}>
+            Klik di sini jika tidak terarah otomatis
+          </a>
+        )}
       </main>
     );
   }
