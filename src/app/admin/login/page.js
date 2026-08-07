@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -9,21 +9,17 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     fetch('/api/admin/me', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {
-        if (data.authenticated) {
-          window.location.href = '/admin';
-        } else {
-          setChecking(false);
+        if (data?.authenticated) {
+          window.location.replace('/admin');
         }
       })
-      .catch(() => setChecking(false));
+      .catch(() => {});
   }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!password.trim()) return;
@@ -37,7 +33,7 @@ export default function AdminLoginPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        window.location.href = '/admin';
+        window.location.replace('/admin');
       } else {
         setError(data.error || 'Login gagal');
       }
@@ -47,16 +43,6 @@ export default function AdminLoginPage() {
       setLoading(false);
     }
   };
-
-  if (checking) {
-    return (
-      <main style={styles.page}>
-        <div style={styles.card}>
-          <p style={styles.muted}>Checking session...</p>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main style={styles.page}>
