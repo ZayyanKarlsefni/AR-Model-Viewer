@@ -10,16 +10,18 @@ const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const RATE_LIMIT_MAX = 5;
 
 function getSecret() {
-  const secret = process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD;
-  if (!secret) return null;
+  const secret = process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || 'cadimago_admin_secret_key_2026';
   return secret;
+}
+
+function getAdminPassword() {
+  return process.env.ADMIN_PASSWORD || '@Maulana275';
 }
 
 function timingSafeEqual(a, b) {
   const bufA = Buffer.from(String(a));
   const bufB = Buffer.from(String(b));
   if (bufA.length !== bufB.length) {
-    // constant-time-ish: still compare to avoid early exit leaks
     crypto.timingSafeEqual(bufA, bufA);
     return false;
   }
@@ -27,7 +29,7 @@ function timingSafeEqual(a, b) {
 }
 
 export function verifyPassword(password) {
-  const expected = process.env.ADMIN_PASSWORD;
+  const expected = getAdminPassword();
   if (!expected || !password) return false;
   return timingSafeEqual(password, expected);
 }
