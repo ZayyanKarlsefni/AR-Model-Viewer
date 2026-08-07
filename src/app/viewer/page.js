@@ -277,69 +277,72 @@ function ViewerContent() {
             )}
 
             {/* 3D VIEWCUBE & FULLSCREEN CONTROLS - TOP RIGHT */}
-            <div className="absolute top-4 right-4 z-20 flex flex-col items-end gap-2">
+            <div className="absolute top-2 right-2 md:top-4 md:right-4 z-20 flex flex-col items-end gap-1.5 md:gap-2">
               <ViewCube modelViewerRef={modelViewerRef} onSelectAngle={setCameraAngle} />
               <button
                 onClick={toggleFullscreen}
                 title="Toggle Fullscreen"
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/90 text-slate-700 border border-slate-200/90 shadow-sm hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95 backdrop-blur-md"
+                className="flex h-7 w-7 md:h-9 md:w-9 items-center justify-center rounded-lg md:rounded-xl bg-white/90 text-slate-700 border border-slate-200/90 shadow-sm hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95 backdrop-blur-md"
               >
-                {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                {isFullscreen ? <Minimize2 className="h-3.5 w-3.5 md:h-4 md:w-4" /> : <Maximize2 className="h-3.5 w-3.5 md:h-4 md:w-4" />}
               </button>
             </div>
 
-            {/* BOTTOM FLOATING DOCK (CENTERED) */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 rounded-full bg-white/95 p-2 shadow-xl border border-slate-200/90 backdrop-blur-md">
+            {/* BOTTOM FLOATING DOCK (CENTERED, MOBILE RESPONSIVE) */}
+            <div className="absolute bottom-3 md:bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 md:gap-2 rounded-full bg-white/95 p-1.5 md:p-2 shadow-xl border border-slate-200/90 backdrop-blur-md max-w-[calc(100vw-24px)]">
               {/* PRIMARY AR BUTTON */}
               <button
                 onClick={() => {
                   const arBtn = document.getElementById('ar-button');
                   if (arBtn) arBtn.click();
                 }}
-                className="flex items-center gap-2 rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-indigo-600/30 transition-all hover:bg-indigo-700 active:scale-95 border border-indigo-500"
+                className="flex items-center gap-1.5 rounded-full bg-indigo-600 px-3 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-bold text-white shadow-md shadow-indigo-600/30 transition-all hover:bg-indigo-700 active:scale-95 border border-indigo-500 whitespace-nowrap"
               >
-                <Smartphone className="h-4 w-4" />
-                <span>Lihat di Ruangan (AR)</span>
+                <Smartphone className="h-3.5 w-3.5 md:h-4 md:w-4 shrink-0" />
+                <span className="hidden sm:inline">Lihat di Ruangan (AR)</span>
+                <span className="sm:hidden">AR</span>
               </button>
 
-              <div className="h-6 w-px bg-slate-200 mx-1" />
+              <div className="h-5 md:h-6 w-px bg-slate-200 shrink-0" />
 
-              {/* PROJECTION MODE TOGGLE (PERSPECTIVE VS ORTHOGRAPHIC) */}
-              <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-full border border-slate-200/60">
+              {/* PROJECTION MODE TOGGLE */}
+              <div className="flex items-center gap-0.5 md:gap-1 bg-slate-100/80 p-0.5 md:p-1 rounded-full border border-slate-200/60">
                 <button
                   onClick={() => setProjectionMode('perspective')}
-                  title="Perspective Projection (Natural Eye View)"
-                  className={`flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full transition-all ${projectionMode === 'perspective' ? 'bg-white text-slate-900 shadow-xs border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
+                  title="Perspective Projection"
+                  className={`flex items-center gap-1 px-2 md:px-2.5 py-1 text-[10px] md:text-xs font-semibold rounded-full transition-all whitespace-nowrap ${projectionMode === 'perspective' ? 'bg-white text-slate-900 shadow-xs border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
                 >
-                  <Eye className="h-3.5 w-3.5" />
-                  <span>Perspective</span>
+                  <Eye className="h-3 w-3 md:h-3.5 md:w-3.5 shrink-0" />
+                  <span className="hidden md:inline">Perspective</span>
+                  <span className="md:hidden">3D</span>
                 </button>
                 <button
                   onClick={() => setProjectionMode('orthographic')}
-                  title="Orthographic Projection (True Parallel CAD Inspection)"
-                  className={`flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full transition-all ${projectionMode === 'orthographic' ? 'bg-white text-slate-900 shadow-xs border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
+                  title="Orthographic Projection"
+                  className={`flex items-center gap-1 px-2 md:px-2.5 py-1 text-[10px] md:text-xs font-semibold rounded-full transition-all whitespace-nowrap ${projectionMode === 'orthographic' ? 'bg-white text-slate-900 shadow-xs border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
                 >
-                  <Compass className="h-3.5 w-3.5" />
-                  <span>Orthographic</span>
+                  <Compass className="h-3 w-3 md:h-3.5 md:w-3.5 shrink-0" />
+                  <span className="hidden md:inline">Ortho</span>
+                  <span className="md:hidden">2D</span>
                 </button>
               </div>
 
-              <div className="h-6 w-px bg-slate-200 mx-1" />
+              <div className="h-5 md:h-6 w-px bg-slate-200 shrink-0" />
 
               {/* ROTATE & RESET BUTTONS */}
               <button
                 onClick={() => setAutoRotate(!autoRotate)}
                 title="Toggle Auto Rotation"
-                className={`flex h-9 w-9 items-center justify-center rounded-full transition-all ${autoRotate ? 'bg-indigo-50 text-indigo-600 border border-indigo-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                className={`flex h-7 w-7 md:h-9 md:w-9 items-center justify-center rounded-full transition-all shrink-0 ${autoRotate ? 'bg-indigo-50 text-indigo-600 border border-indigo-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
               >
-                <RefreshCw className={`h-4 w-4 ${autoRotate ? 'animate-spin' : ''}`} style={{ animationDuration: '8s' }} />
+                <RefreshCw className={`h-3.5 w-3.5 md:h-4 md:w-4 ${autoRotate ? 'animate-spin' : ''}`} style={{ animationDuration: '8s' }} />
               </button>
               <button
                 onClick={resetCamera}
                 title="Reset View Position"
-                className="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all"
+                className="flex h-7 w-7 md:h-9 md:w-9 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all shrink-0"
               >
-                <RotateCcw className="h-4 w-4" />
+                <RotateCcw className="h-3.5 w-3.5 md:h-4 md:w-4" />
               </button>
             </div>
           </div>
