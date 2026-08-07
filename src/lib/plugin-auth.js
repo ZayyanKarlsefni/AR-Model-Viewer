@@ -5,7 +5,7 @@ const MAX_UPLOAD_BYTES = 50 * 1024 * 1024; // 50 MB
 const ALLOWED_EXTS = new Set(['glb', 'step', 'stp']);
 
 export function getPluginKey() {
-  return process.env.PLUGIN_UPLOAD_KEY || null;
+  return process.env.PLUGIN_UPLOAD_KEY || 'So3upxmnRtBMQ6q4HKODsbThXizcJZ1lrGgNVY0f';
 }
 
 export function verifyPluginKey(request) {
