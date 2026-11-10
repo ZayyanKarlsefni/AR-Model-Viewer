@@ -12,6 +12,7 @@ export default function ViewCube({ modelViewerRef, onSelectAngle }) {
 
     const handleCameraChange = () => {
       try {
+        if (typeof viewer.getCameraOrbit !== 'function') return;
         const orbit = viewer.getCameraOrbit();
         if (!orbit) return;
         const thetaDeg = (orbit.theta * 180) / Math.PI;
@@ -26,9 +27,15 @@ export default function ViewCube({ modelViewerRef, onSelectAngle }) {
       }
     };
 
+    handleCameraChange();
+    if (typeof window !== 'undefined' && window.customElements?.whenDefined) {
+      window.customElements.whenDefined('model-viewer').then(handleCameraChange).catch(() => {});
+    }
     viewer.addEventListener('camera-change', handleCameraChange);
+    viewer.addEventListener('load', handleCameraChange);
     return () => {
       viewer.removeEventListener('camera-change', handleCameraChange);
+      viewer.removeEventListener('load', handleCameraChange);
     };
   }, [modelViewerRef]);
 
@@ -46,25 +53,25 @@ export default function ViewCube({ modelViewerRef, onSelectAngle }) {
   });
 
   /* Cube face size: 24px on mobile (translateZ=12px), 32px on desktop (translateZ=32px via md:) */
-  const cubeFaceClasses = "absolute inset-0 flex items-center justify-center bg-gradient-to-b from-slate-100 via-slate-150 to-slate-300 border border-slate-400/90 rounded-xs font-black tracking-wider text-slate-800 shadow-xs hover:from-sky-100 hover:to-indigo-200 hover:text-sky-950 hover:border-sky-500 transition-all cursor-pointer text-[8px] md:text-[11px]";
+  const cubeFaceClasses = "absolute inset-0 flex items-center justify-center bg-[#FAF6EE] border border-[#16335C]/50 rounded-xs font-mono font-bold tracking-wider text-[#16335C] shadow-2xs hover:bg-[#16335C] hover:text-[#FAF6EE] hover:border-[#16335C] transition-colors cursor-pointer text-[8px] md:text-[10px] uppercase select-none";
 
   return (
-    <div className="relative flex flex-col items-center justify-center p-1.5 md:p-2.5 bg-white/95 rounded-xl md:rounded-2xl border border-slate-200/90 shadow-lg md:shadow-xl backdrop-blur-md select-none">
+    <div className="relative flex flex-col items-center justify-center p-1.5 md:p-2 bg-[#FAF6EE]/95 rounded-lg border border-[#16335C]/30 shadow-md backdrop-blur-md select-none font-mono">
       {/* INVENTOR HOME BUTTON TOP-LEFT */}
       <div className="w-full flex items-center justify-start mb-0.5 md:mb-1">
         <button
           onClick={(e) => handleFaceClick('iso', e)}
-          title="Inventor Home / Isometric View"
-          className="flex h-5 w-5 md:h-6 md:w-6 items-center justify-center rounded-md bg-slate-100 hover:bg-sky-500 hover:text-white text-slate-700 border border-slate-300 transition-all shadow-2xs active:scale-95 z-20"
+          title="Home / Isometric View"
+          className="flex h-5 w-5 md:h-6 md:w-6 items-center justify-center rounded-sm bg-[#FAF6EE] hover:bg-[#16335C] text-[#16335C] hover:text-[#FAF6EE] border border-[#16335C]/30 transition-colors shadow-2xs active:scale-95 z-20 cursor-pointer"
         >
           <Home className="h-3 w-3 md:h-3.5 md:w-3.5" />
         </button>
       </div>
 
       {/* PURE 3D VIEWCUBE CONTAINER */}
-      <div className="w-16 h-16 md:w-24 md:h-24 relative flex items-center justify-center p-1 md:p-2" style={{ perspective: '400px' }}>
+      <div className="w-16 h-16 md:w-20 md:h-20 relative flex items-center justify-center p-1 md:p-2" style={{ perspective: '400px' }}>
         <div
-          className="w-10 h-10 md:w-16 md:h-16 relative transition-transform duration-75 ease-out"
+          className="w-10 h-10 relative transition-transform duration-75 ease-out"
           style={{
             transformStyle: 'preserve-3d',
             transform: `rotateX(${rotation.rx}deg) rotateY(${rotation.ry}deg)`,
